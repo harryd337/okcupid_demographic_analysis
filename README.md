@@ -14,6 +14,12 @@ These files are then loaded by the program 'okapp.py'. This is a streamlit appli
 
 ## Use of 'okapp.py':
 
+To run as streamlit application in the browser, go to Anaconda prompt and type:
+
+```
+streamlit run okapp.py
+```
+
 From the sidebar, the user may select keywords to filter the 2541 questions using a multi-selection widget. The filtered questions are displayed. The user may then choose their desired question from a drop-down widget in the sidebar. The user has the ability to change their mind on these options at any point, the app will display the updated information.
 
 A countplot is displayed for the chosen question's data. The user may then choose to remove one or many categories (options) associated with the question using another multi-selection widget in the sidebar. The countplot and dataset will update accordingly.
