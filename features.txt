@@ -1,0 +1,84 @@
+p_conf
+p_laidback
+p_drug
+p_lit
+p_progress
+p_roman
+p_dominant
+p_polit
+p_pure
+p_manners
+p_submissive
+p_inde
+p_kinky
+p_opti
+p_sloppy
+p_indie
+p_introvert
+p_arro
+p_ambi
+p_cool
+p_trusting
+d_age
+p_thrift
+p_organ
+p_sexdrive
+p_honest
+lf_max_age
+p_expsex
+p_artsy
+p_scien
+p_spon
+p_explife
+p_greed
+p_capi
+p_giving
+p_explove
+p_convenmoral
+p_aggre
+p_kind
+p_extro
+p_friendstrangers
+p_oldfash
+p_comp
+p_lovedri
+p_sprit
+lf_min_age
+p_passion
+p_energetic
+p_exer
+p_logic
+p_math
+p_geeky
+p_adven
+Graduated from
+Working on
+Dropped out of
+Atheism
+Agnosticism
+Christianity
+Judaism
+Catholicism
+Buddhism
+Hinduism
+Islam
+kids
+White
+Hispanic / Latin
+Mixed
+Black
+Asian
+Native American
+Middle Eastern
+Indian
+Pacific Islander
+Drugs often
+Smokes
+Drinks often
+Straight
+Gay
+Bisexual
+Other orientation
+Male
+Female
+Other gender
