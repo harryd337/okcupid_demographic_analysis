@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 21 10:13:23 2022
+#Created on Mon Nov 21 10:13:23 2022
+#@author: Harry Durnberger
 
-@author: Harry Durnberger
+#OKCupid data analysis streamlit application.
 
-OKCupid data analysis streamlit application.
+#This local app is run in the browser. It is used to provide an easy-to-use
+# GUI to help the user process the OKCupid dataset, with the aim of generating
+# an accurate ML model trained to predict answers given to a selected question.
 
-This local app is run in the browser. It is used to provide an easy-to-use
-GUI to help the user process the OKCupid dataset, with the aim of generating an
-accurate ML model trained to predict answers given to a selected question.
+#The user can select keywords to filter the 2541 questions. The filtered
+# questions are displayed. The user may then choose their desired question.
 
-The user can select keywords to filter the 2541 questions. The filtered
-questions are displayed. The user may then choose their desired question.
+#A countplot is displayed for the chosen question's data. The user may choose
+# to remove one or many categories (options) associated with the question. The
+# countplot and dataset will update accordingly.
 
-A countplot is displayed for the chosen question's data. The user may choose
-to remove one or many categories (options) associated with the question.
-The countplot and dataset will update accordingly.
-"""
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -58,8 +56,8 @@ list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
 keywords = st.sidebar.multiselect("Select keywords:",
                                   options=list_keywords, default=None)
 #filters questions dataset by chosen keywords:
-for i in range(0,len(keywords)):
-    qs = qs[qs['Keywords'].str.contains(keywords[i])]
+for keyword in keywords:
+    qs = qs[qs['Keywords'].str.contains(keyword)]
 #generates a list the length of the num. of questions of the filtered dataset
 # + a blank initial value:
 list1 = [('')]
@@ -139,9 +137,9 @@ elif chosen_q_num != '': #if the user has selected a question
     #multi-selection tool in the sidebar for options the user wishes to remove:
     options_remove = st.sidebar.multiselect("Select categories to remove:",
                                             options=options, default=None)
-    for i in range(0,len(options_remove)): #loop over options to remove
+    for option in options_remove: #loop over options to remove
         #remove all rows in dataset with values equal to the option to remove
-        ok1 = ok1[ok1[q_number] != options_remove[i]] 
+        ok1 = ok1[ok1[q_number] != option]
     st.dataframe(ok1)
     #plot a histogram displaying the counts of each remaining option:
     count = px.histogram(ok1, x=q_number, text_auto=True)
