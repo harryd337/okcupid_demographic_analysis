@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
+#OKCupid data analysis streamlit application.
+
 #Created on Mon Nov 21 10:13:23 2022
 #@author: Harry Durnberger
-
-#OKCupid data analysis streamlit application.
 
 #This local app is run in the browser. It is used to provide an easy-to-use
 # GUI to help the user process the OKCupid dataset, with the aim of generating
