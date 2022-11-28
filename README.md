@@ -4,7 +4,7 @@
 
 ### Student name: Harry Durnberger
 
-This project attempts to handle a very large dataset (N=68371, 2620 variables) from the online dating site OKCupid to make predictions about it's users. The dataset consists of basic profile information (gender, age, sexuality); 50 personality scales (continuous) that OKCupid calculates automatically for its users; and categorical answers given to the top 2541 questions on the site. The questions are extremely varied and many are personal, the user is incentivised to answer the questions so that the OKCupid algorithm can match them to someone with similar answers.
+This project attempts to handle a very large dataset (N=68371, 2620 variables) from the online dating site OKCupid to make predictions about it's users. The dataset consists of a total of 83 features, including basic profile information (gender, age, sexuality) and 50 personality scales (continuous) that OKCupid calculates automatically for its users. In addition, there are categorical answers given to the top 2541 questions on the site. The questions are extremely varied and many are personal, the user is incentivised to answer the questions so that the OKCupid algorithm can match them to someone with similar answers.
 
 [Paper on dataset: https://openpsych.net/files/papers/Kirkegaard_2016g.pdf]
 
