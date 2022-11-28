@@ -44,6 +44,8 @@ def load_qs(): #function to load questions + traits info
 #this function runs only once:
 qs_and_traits,qs_total,qs = load_qs()
 
+
+
 # ---- INITIAL SIDEBAR ----
 
 st.sidebar.header("Please filter and select a question:")
@@ -126,7 +128,7 @@ elif chosen_q_num != '': #if the user has selected a question
     #finds the question number associated with the index:
     q_number = (indexes_of_qs_and_traits[[q_index]]).iloc[0]
     cols = features + [q_number] #add chosen question to list of features
-    ok1 = ok.copy()
+    ok1 = ok.copy() #ensures original dataset is not edited
     #cleaned dataset with all features + single 'ouput' question column:
     ok1 = ok1[cols]
     #(makes dataset easier to work with initially, remove line later):
@@ -137,19 +139,24 @@ elif chosen_q_num != '': #if the user has selected a question
     options_remove = st.sidebar.multiselect("Select categories to remove:",
                                             options=options, default=None)
     for option in options_remove: #loop over options to remove
-        #remove all rows in dataset with values equal to the option to remove
+        #keep only rows with values not equal to the option to remove
         ok1 = ok1[ok1[q_number] != option]
-    st.dataframe(ok1)
     #plot a histogram displaying the counts of each remaining option:
     count = px.histogram(ok1, x=q_number, text_auto=True)
     st.plotly_chart(count,theme="streamlit")
-    #plot a correlation matrix of all the features:
-    corr_mat = ok1.corr().round(3)
-    st.write(corr_mat)
-    fig = plt.figure(figsize = (100,50))
-    heat_map = sns.heatmap(corr_mat, annot = True)
-    st.pyplot(fig)
-
+    df_check = st.checkbox('Display dataframe', value=False)
+    if df_check:
+        st.dataframe(ok1)
+    corr_matrix_check = st.checkbox('Display correlation matrix', value=False)
+    if corr_matrix_check:
+        #plot a correlation matrix of all the features:
+        corr_mat = ok1.corr().round(3)
+        st.write(corr_mat)
+        st.text('Heatmap:')
+        fig = plt.figure(figsize = (100,50))
+        heat_map = sns.heatmap(corr_mat, annot = True)
+        st.pyplot(fig)
+     
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """
             <style>
