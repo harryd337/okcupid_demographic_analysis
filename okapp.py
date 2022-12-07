@@ -13,13 +13,13 @@
 #A countplot is displayed for the chosen question's data. The user may choose
 # to remove one or many categories (options) associated with the question. The
 # countplot and dataset will update accordingly.
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pickle
 from collections import defaultdict
 st.set_page_config(page_title="OKCupid Data Analysis",
                    page_icon=":mag:", layout="wide")
@@ -35,13 +35,7 @@ def load_dataset(): #function to load the dataset and list of features
     return ok, features
 #this function runs only once to avoid loading the dataset each update:
 ok,features = load_dataset()
-#%%
-with open('features.txt', 'r') as f: #read list of features from text file
-        lines = f.readlines()
-        features =[]
-        for l in lines:
-            features.append(l.replace("\n",""))
-#@st.experimental_singleton
+@st.experimental_singleton
 def load_qs_and_traits(features): #function to load questions + traits info
     qs_and_traits = pd.read_csv("question_data.csv",';')
     #keep only the questions:
@@ -61,7 +55,7 @@ def create_group_dict(new_features, index):
     for feature in feature_group:
         dictionary[feature].append(feature)
     return dictionary
-#@st.experimental_singleton
+@st.experimental_singleton
 def create_dictionaries(traits):
     #function to create dictionaries for each group of features
     traits = traits.set_index('text').to_dict()['Unnamed: 0'] #traits dict
@@ -82,9 +76,9 @@ def create_dictionaries(traits):
 #create dictionaries: (this function runs only once)
 (traits, uni, religion, ethnicity,
  kids, substances, orientation, gender) = create_dictionaries(traits)
-print(*orientation['Straight'])
-print(traits['Confident'])
-#%%
+# print(*orientation['Straight'])
+# print(traits['Confident'])
+
 
 # ---- INITIAL SIDEBAR ----
 
@@ -196,8 +190,35 @@ elif chosen_q_num != '': #if the user has selected a question
         fig = plt.figure(figsize = (100,50))
         heat_map = sns.heatmap(corr_mat, annot = True)
         st.pyplot(fig)
-    chosen_features = st.multiselect('')
-     
+    st.markdown("""---""")
+    keys_traits = [('')]
+    keys_traits.extend(list(traits.keys()))
+    chosen_traits = st.sidebar.multiselect("Choose traits to include:", 
+                                   options=keys_traits, default=None)
+    if chosen_traits != '':
+        num_chosen_traits = len(chosen_traits)
+        for t in range(num_chosen_traits):
+            chosen_trait = chosen_traits[t]
+            value = traits[chosen_trait]
+            st.text(value)
+            lower = st.slider('Choose lower percentile range boundary:', 
+                                min_value=0, max_value=100,
+                                key=(f"{chosen_trait}.low"))
+            upper = st.slider('Choose upper percentile range boundary:', 
+                                min_value=0, max_value=100,
+                                key=(f"{chosen_trait}.high"))
+            if lower == 0 and upper != 0:
+                st.text(f"'{chosen_trait}' percentile range:")
+                st.text(f"{lower}-{upper} (bottom {upper}%)")
+            elif lower != 0 and upper == 100:
+                st.text(f"'{chosen_trait}' percentile range:")
+                st.text(f"{lower}-{upper} (top {upper-lower}%)")
+            elif lower > upper:
+                st.text('Invalid percentile range.')
+            else:
+                st.text(f"'{chosen_trait}' percentile range:")
+                st.text(f"{lower}-{upper}")
+            st.markdown("""---""")
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """
             <style>

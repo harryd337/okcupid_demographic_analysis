@@ -12,6 +12,7 @@
 #List of features is written to "features.txt".
 import numpy as np
 import pandas as pd
+import pickle
 ok = pd.read_csv("user_data_public.csv")
 #drop likely irrelevant features:
 ok = ok.drop(columns=['lf_single', 'd_religion_seriosity', 'CA', 'gender2', 
@@ -72,7 +73,6 @@ orientation = ['Straight', 'Gay', 'Bisexual', 'Other orientation']
 gender = ['Male', 'Female', 'Other gender']
 new_features = new_features + [substances] + [orientation] + [gender]
 #write list of new features to text file:
-import pickle 
 with open('new_features.txt', "wb") as f:
     pickle.dump(new_features, f)
 #remove all columns containing 'q' (not features):
