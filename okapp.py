@@ -104,6 +104,35 @@ chosen_q_num = st.sidebar.selectbox("Select question number:",
                                     options=list1, index=0)
 
 # ---- MAINPAGE ----
+def percentile_range():
+    feature_range = np.zeros(shape=(num_chosen_traits,2))
+    lower = 0
+    upper = 0
+    values = []
+    for t in range(num_chosen_traits):
+        chosen_trait = chosen_traits[t]
+        values.append(traits[chosen_trait])
+        lower = st.slider('Choose lower percentile range boundary:', 
+                                min_value=0, max_value=100,
+                                key=(f"{chosen_trait}.low"))
+        upper = st.slider('Choose upper percentile range boundary:', 
+                                min_value=0, max_value=100,
+                                key=(f"{chosen_trait}.high"))
+        feature_range[t,0] = lower
+        feature_range[t,1] = upper
+        if lower == 0 and upper != 0:
+            st.text(f"'{chosen_trait}' percentile range:")
+            st.text(f"{lower}-{upper} (bottom {upper}%)")
+        elif lower != 0 and upper == 100:
+            st.text(f"'{chosen_trait}' percentile range:")
+            st.text(f"{lower}-{upper} (top {upper-lower}%)")
+        elif lower > upper:
+            st.text('Invalid percentile range.')
+        else:
+            st.text(f"'{chosen_trait}' percentile range:")
+            st.text(f"{lower}-{upper}")
+        st.markdown("""---""")
+    return feature_range, values
 
 #stores an array of the indexes for the set of filtered questions:
 indexes = qs.index.values
@@ -197,28 +226,9 @@ elif chosen_q_num != '': #if the user has selected a question
                                    options=keys_traits, default=None)
     if chosen_traits != '':
         num_chosen_traits = len(chosen_traits)
-        for t in range(num_chosen_traits):
-            chosen_trait = chosen_traits[t]
-            value = traits[chosen_trait]
-            st.text(value)
-            lower = st.slider('Choose lower percentile range boundary:', 
-                                min_value=0, max_value=100,
-                                key=(f"{chosen_trait}.low"))
-            upper = st.slider('Choose upper percentile range boundary:', 
-                                min_value=0, max_value=100,
-                                key=(f"{chosen_trait}.high"))
-            if lower == 0 and upper != 0:
-                st.text(f"'{chosen_trait}' percentile range:")
-                st.text(f"{lower}-{upper} (bottom {upper}%)")
-            elif lower != 0 and upper == 100:
-                st.text(f"'{chosen_trait}' percentile range:")
-                st.text(f"{lower}-{upper} (top {upper-lower}%)")
-            elif lower > upper:
-                st.text('Invalid percentile range.')
-            else:
-                st.text(f"'{chosen_trait}' percentile range:")
-                st.text(f"{lower}-{upper}")
-            st.markdown("""---""")
+        feature_range, values = percentile_range()
+        st.write(feature_range)
+        st.write(*values)
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """
             <style>
