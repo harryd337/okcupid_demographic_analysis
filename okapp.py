@@ -82,7 +82,7 @@ def create_dictionaries(traits):
 
 # ---- INITIAL SIDEBAR ----
 
-st.sidebar.header("Please filter and select a question:")
+st.sidebar.subheader("Please filter and select a question:")
 #list of keywords to help the user filter the (2541) questions:
 list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
                  'politics','religion', 'superstition', 'cognitive',
@@ -220,15 +220,18 @@ elif chosen_q_num != '': #if the user has selected a question
         heat_map = sns.heatmap(corr_mat, annot = True)
         st.pyplot(fig)
     st.markdown("""---""")
-    keys_traits = [('')]
-    keys_traits.extend(list(traits.keys()))
+    st.sidebar.subheader("Please choose features to be included in the model:")
+    keys_traits = list(traits.keys())
     chosen_traits = st.sidebar.multiselect("Choose traits to include:", 
                                    options=keys_traits, default=None)
-    if chosen_traits != '':
+    if len(chosen_traits) > 0:
+        st.subheader("Chosen traits:")
         num_chosen_traits = len(chosen_traits)
         feature_range, values = percentile_range()
         st.write(feature_range)
         st.write(*values)
+    else:
+        st.text('Please choose a selection of features.')
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """
             <style>
