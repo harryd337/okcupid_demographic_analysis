@@ -20,6 +20,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from collections import defaultdict
 st.set_page_config(page_title="OKCupid Data Analysis",
                    page_icon=":mag:", layout="wide")
 #singleton functions run once and then do nothing if called again:
@@ -31,20 +32,59 @@ def load_dataset(): #function to load the dataset and list of features
         features =[]
         for l in lines:
             features.append(l.replace("\n",""))
-    return ok,features
+    return ok, features
 #this function runs only once to avoid loading the dataset each update:
 ok,features = load_dataset()
-@st.experimental_singleton
-def load_qs(): #function to load questions + traits info
+#%%
+with open('features.txt', 'r') as f: #read list of features from text file
+        lines = f.readlines()
+        features =[]
+        for l in lines:
+            features.append(l.replace("\n",""))
+#@st.experimental_singleton
+def load_qs_and_traits(features): #function to load questions + traits info
     qs_and_traits = pd.read_csv("question_data.csv",';')
-    qs = qs_and_traits[:-79] #remove personality traits
+    #keep only the questions:
+    qs = qs_and_traits[:-79] #remove traits
     qs.Keywords = qs.Keywords.fillna('Other') #fills NaNs
     qs_total = qs
-    return qs_and_traits,qs_total,qs
+    #now use list of features to keep only the traits:
+    traits = qs_and_traits[qs_and_traits.iloc[:,0].isin(features)] #remove qs
+    return qs_and_traits, qs_total, qs, traits
 #this function runs only once:
-qs_and_traits,qs_total,qs = load_qs()
-
-
+qs_and_traits, qs_total, qs, traits = load_qs_and_traits(features)
+def create_group_dict(new_features, index):
+    #function that takes a list of new feature groups and creates a dictionary
+    # for a particular group based on the index of the group within the list
+    feature_group = new_features[index]
+    dictionary = defaultdict(list)
+    for feature in feature_group:
+        dictionary[feature].append(feature)
+    return dictionary
+#@st.experimental_singleton
+def create_dictionaries(traits):
+    #function to create dictionaries for each group of features
+    traits = traits.set_index('text').to_dict()['Unnamed: 0'] #traits dict
+    #load list of new features created by 'clean_dataset.py':
+    with open("new_features.txt", "rb") as f:
+        new_features = pickle.load(f)
+    #create dictionaries for each group of newly created features:
+    uni = create_group_dict(new_features, 0)
+    religion = create_group_dict(new_features, 1)
+    ethnicity = create_group_dict(new_features, 2)
+    kids = create_group_dict(new_features, 3)
+    kids['Has kids'] = kids.pop('kids') #rename a key
+    substances = create_group_dict(new_features, 4)
+    orientation = create_group_dict(new_features, 5)
+    gender = create_group_dict(new_features, 6)
+    return (traits, uni, religion, ethnicity, kids, substances, orientation,
+            gender)
+#create dictionaries: (this function runs only once)
+(traits, uni, religion, ethnicity,
+ kids, substances, orientation, gender) = create_dictionaries(traits)
+print(*orientation['Straight'])
+print(traits['Confident'])
+#%%
 
 # ---- INITIAL SIDEBAR ----
 
@@ -132,7 +172,7 @@ elif chosen_q_num != '': #if the user has selected a question
     #cleaned dataset with all features + single 'ouput' question column:
     ok1 = ok1[cols]
     #(makes dataset easier to work with initially, remove line later):
-    ok1 = ok1.drop(ok1.index[1000:])
+    #ok1 = ok1.drop(ok1.index[1000:])
     #removes rows where the question column has no data:
     ok1 = ok1.dropna(subset=[q_number])
     #multi-selection tool in the sidebar for options the user wishes to remove:
@@ -156,6 +196,7 @@ elif chosen_q_num != '': #if the user has selected a question
         fig = plt.figure(figsize = (100,50))
         heat_map = sns.heatmap(corr_mat, annot = True)
         st.pyplot(fig)
+    chosen_features = st.multiselect('')
      
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """

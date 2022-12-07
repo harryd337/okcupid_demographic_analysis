@@ -62,7 +62,6 @@ Catholicism
 Buddhism
 Hinduism
 Islam
-kids
 White
 Hispanic / Latin
 Mixed
@@ -72,6 +71,7 @@ Native American
 Middle Eastern
 Indian
 Pacific Islander
+kids
 Drugs often
 Smokes
 Drinks often
