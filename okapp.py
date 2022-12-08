@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
 from collections import defaultdict
+from collections import Counter
 st.set_page_config(page_title="OKCupid Data Analysis",
                    page_icon=":mag:", layout="wide")
 #singleton functions run once and then do nothing if called again:
@@ -73,8 +74,6 @@ def create_dictionary(traits):
     traits = traits.set_index('text').to_dict()['Unnamed: 0']
     return traits
 traits = create_dictionary(traits) #this function runs only once
-# print(*orientation['Straight'])
-# print(traits['Confident'])
 def percentile_range():
     #Function to provide percentile range sliders to allow the user to choose
     # the percentile range over which to filter the traits.
@@ -84,11 +83,11 @@ def percentile_range():
     feature_range = np.zeros(shape=(num_chosen_traits,2)) #define empty matrix
     lower = 0
     upper = 0
-    trait_id = []
+    chosen_trait_ids = []
     for t in range(num_chosen_traits): #loop over number of chosen traits
         chosen_trait = chosen_traits[t] #select a particular trait
         #use traits dictionary to find trait ID and add this to the list:
-        trait_id.append(traits[chosen_trait])
+        chosen_trait_ids.append(traits[chosen_trait])
         st.text(f"'{chosen_trait}'")
         #slider on mainpage to allow the user to select the lower percentile
         # range boundary for the trait:
@@ -115,7 +114,7 @@ def percentile_range():
             st.text("Chosen percentile range:")
             st.text(f"{lower}-{upper}")
         st.markdown("""---""")
-    return feature_range, trait_id
+    return feature_range, chosen_trait_ids
 st.sidebar.subheader("Please filter and select a question:")
 #list of keywords to help the user filter the (2541) questions:
 list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
@@ -207,7 +206,8 @@ elif chosen_q_num != '': #if the user has selected a question
         #keep only rows with values not equal to the option to remove
         ok1 = ok1[ok1[q_number] != option]
     #plot a histogram displaying the counts of each remaining option:
-    count = px.histogram(ok1, x=q_number, text_auto=True)
+    count = px.histogram(ok1, x=q_number, title='Population countplot:',
+                         text_auto=True)
     st.plotly_chart(count,theme="streamlit")
     st.markdown("""---""")
     st.sidebar.subheader("Please filter the demographic:")
@@ -217,9 +217,15 @@ elif chosen_q_num != '': #if the user has selected a question
                                    options=keys_traits, default=None)
     if len(chosen_traits) > 0: #if the user has chosen at least one trait
         st.subheader("Chosen traits:")
-        feature_range, trait_id = percentile_range()
-        st.write(feature_range)
-        st.write(*trait_id)
+        feature_range, chosen_trait_ids = percentile_range()
+        trait_ids = list(traits.values())
+        trait_ids_to_remove = list((Counter(trait_ids) - 
+                                   Counter(chosen_trait_ids)).elements())
+        ok1 = ok1.drop(columns=[*trait_ids_to_remove])
+        for i, trait in enumerate(chosen_trait_ids):
+            lowerbound = feature_range[i,0]*0.01*200-100
+            upperbound = feature_range[i,1]*0.01*200-100
+            ok1 = ok1[(ok1[trait] > lowerbound) & (ok1[trait] < upperbound)]
     #selectbox in the sidebar for the user to choose a category to filter by:
     chosen_gender = st.sidebar.selectbox("Gender:", 
                                    options=gender, index=0)
@@ -256,8 +262,12 @@ elif chosen_q_num != '': #if the user has selected a question
         # duplicates dropped:
         ok1 = pd.concat(ok_list).drop_duplicates().reset_index(drop=True)
         for category in chosen_all: #loop over each chosen category once more
-            ok1 = ok1[ok1[category] == 1] #keep only 
-        st.dataframe(ok1)
+            ok1 = ok1[ok1[category] == 1] #keep only
+    #plot a histogram displaying the counts of each option of the selected
+    # demographic:
+    count = px.histogram(ok1, x=q_number, text_auto=True,
+                         title='Selected demographic countplot:')
+    st.plotly_chart(count,theme="streamlit")
     # else:
     #     st.text('Please filter the demographic.')
 # ---- HIDE STREAMLIT STYLE ----
