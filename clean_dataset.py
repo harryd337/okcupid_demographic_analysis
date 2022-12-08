@@ -31,13 +31,13 @@ for feature in list_categorical: #loop over list of categorical features
     unique_categories = [*(ok[feature].unique())]
     #remove NaNs:
     unique_categories = [x for x in unique_categories if str(x) != 'nan']
-    group = []
+    group = [] #list of groups
     for category in unique_categories: #loop over unique categories of feature
         if category != '-' and category != 'Other':
             #create new binary column for each category:
             ok[category] = np.where(ok[feature] == category, 1, 0)
-            group.append(category)
-    new_features.append(group)
+            group.append(category) #add category to group
+    new_features.append(group) #add group to list of groups
 #we must binarise boolean-like (yes/no) categorical features
 #create new binary columns for positive categories:
 ok['Drugs often'] = np.where(ok['d_drugs'] == 'Often', 1, 0)
@@ -68,6 +68,7 @@ ok = ok.drop(columns=['d_education_phase','d_religion_type',
                       'd_drugs','d_smokes','d_drinks','d_orientation',
                       'd_gender']) #drop columns we just converted
 ok.to_csv("ok.csv") #write cleaned dataset to csv file
+#create lists of new features sorted into groups:
 substances = ['Drugs often', 'Smokes', 'Drinks often']
 orientation = ['Straight', 'Gay', 'Bisexual', 'Other orientation']
 gender = ['Male', 'Female', 'Other gender']
@@ -78,6 +79,6 @@ with open('new_features.txt', "wb") as f:
 #remove all columns containing 'q' (not features):
 ok_no_qs = ok[ok.columns.drop(list(ok.filter(regex='q')))]
 features = ok_no_qs.columns.tolist() #list of features
-with open('features.txt', 'w') as f: #write list of features to text file
+with open('features.txt', 'w') as f: #write list of all features to text file
     for line in features:
         f.write(f"{line}\n")

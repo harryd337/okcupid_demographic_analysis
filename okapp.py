@@ -47,41 +47,75 @@ def load_qs_and_traits(features): #function to load questions + traits info
     return qs_and_traits, qs_total, qs, traits
 #this function runs only once:
 qs_and_traits, qs_total, qs, traits = load_qs_and_traits(features)
-def create_group_dict(new_features, index):
-    #function that takes a list of new feature groups and creates a dictionary
-    # for a particular group based on the index of the group within the list
-    feature_group = new_features[index]
-    dictionary = defaultdict(list)
-    for feature in feature_group:
-        dictionary[feature].append(feature)
-    return dictionary
 @st.experimental_singleton
-def create_dictionaries(traits):
-    #function to create dictionaries for each group of features
-    traits = traits.set_index('text').to_dict()['Unnamed: 0'] #traits dict
-    #load list of new features created by 'clean_dataset.py':
+def load_new_features():
     with open("new_features.txt", "rb") as f:
         new_features = pickle.load(f)
-    #create dictionaries for each group of newly created features:
-    uni = create_group_dict(new_features, 0)
-    religion = create_group_dict(new_features, 1)
-    ethnicity = create_group_dict(new_features, 2)
-    kids = create_group_dict(new_features, 3)
-    kids['Has kids'] = kids.pop('kids') #rename a key
-    substances = create_group_dict(new_features, 4)
-    orientation = create_group_dict(new_features, 5)
-    gender = create_group_dict(new_features, 6)
-    return (traits, uni, religion, ethnicity, kids, substances, orientation,
-            gender)
-#create dictionaries: (this function runs only once)
-(traits, uni, religion, ethnicity,
- kids, substances, orientation, gender) = create_dictionaries(traits)
+    #create lists for each group of newly created features:
+    uni = new_features[0]
+    uni.insert(0, '') #insert a blank initial value to the category list
+    religion = new_features[1]
+    religion.insert(0, '')
+    ethnicity = new_features[2]
+    ethnicity.insert(0, '')
+    substances = new_features[4]
+    substances.insert(0, '')
+    orientation = new_features[5]
+    orientation.insert(0, '')
+    gender = new_features[6]
+    gender.insert(0, '')
+    return uni, religion, ethnicity, substances, orientation, gender
+(uni, religion, ethnicity,
+ substances, orientation, gender) = load_new_features()
+@st.experimental_singleton
+def create_dictionary(traits):
+    #function to create dictionary for personality traits
+    traits = traits.set_index('text').to_dict()['Unnamed: 0']
+    return traits
+traits = create_dictionary(traits) #this function runs only once
 # print(*orientation['Straight'])
 # print(traits['Confident'])
-
-
-# ---- INITIAL SIDEBAR ----
-
+def percentile_range():
+    #Function to provide percentile range sliders to allow the user to choose
+    # the percentile range over which to filter the traits.
+    #Returns matrix of percentile range boundary values and associated trait
+    # identifiers.
+    num_chosen_traits = len(chosen_traits)
+    feature_range = np.zeros(shape=(num_chosen_traits,2)) #define empty matrix
+    lower = 0
+    upper = 0
+    trait_id = []
+    for t in range(num_chosen_traits): #loop over number of chosen traits
+        chosen_trait = chosen_traits[t] #select a particular trait
+        #use traits dictionary to find trait ID and add this to the list:
+        trait_id.append(traits[chosen_trait])
+        st.text(f"'{chosen_trait}'")
+        #slider on mainpage to allow the user to select the lower percentile
+        # range boundary for the trait:
+        lower = st.slider('Choose lower percentile range boundary:', 
+                                min_value=0, max_value=100,
+                                key=(f"{chosen_trait}.low"))
+        #slider for the upper boundary:
+        upper = st.slider('Choose upper percentile range boundary:', 
+                                min_value=0, max_value=100,
+                                key=(f"{chosen_trait}.high"))
+        #add the selected percentile range boundaries to the matrix of ranges:
+        feature_range[t,0] = lower
+        feature_range[t,1] = upper
+        #display the chosen range to the user:
+        if lower == 0 and upper != 0: #lower boundary
+            st.text("Chosen percentile range:")
+            st.text(f"{lower}-{upper} (bottom {upper}%)")
+        elif lower != 0 and upper == 100: #upper boundary
+            st.text("Chosen percentile range:")
+            st.text(f"{lower}-{upper} (top {upper-lower}%)")
+        elif lower > upper:
+            st.text('Invalid percentile range.')
+        else: #middle boundary
+            st.text("Chosen percentile range:")
+            st.text(f"{lower}-{upper}")
+        st.markdown("""---""")
+    return feature_range, trait_id
 st.sidebar.subheader("Please filter and select a question:")
 #list of keywords to help the user filter the (2541) questions:
 list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
@@ -102,38 +136,6 @@ list1.extend(list3)
 #question number selection tool in the sidebar with blank initial value:
 chosen_q_num = st.sidebar.selectbox("Select question number:",
                                     options=list1, index=0)
-
-# ---- MAINPAGE ----
-def percentile_range():
-    feature_range = np.zeros(shape=(num_chosen_traits,2))
-    lower = 0
-    upper = 0
-    values = []
-    for t in range(num_chosen_traits):
-        chosen_trait = chosen_traits[t]
-        values.append(traits[chosen_trait])
-        lower = st.slider('Choose lower percentile range boundary:', 
-                                min_value=0, max_value=100,
-                                key=(f"{chosen_trait}.low"))
-        upper = st.slider('Choose upper percentile range boundary:', 
-                                min_value=0, max_value=100,
-                                key=(f"{chosen_trait}.high"))
-        feature_range[t,0] = lower
-        feature_range[t,1] = upper
-        if lower == 0 and upper != 0:
-            st.text(f"'{chosen_trait}' percentile range:")
-            st.text(f"{lower}-{upper} (bottom {upper}%)")
-        elif lower != 0 and upper == 100:
-            st.text(f"'{chosen_trait}' percentile range:")
-            st.text(f"{lower}-{upper} (top {upper-lower}%)")
-        elif lower > upper:
-            st.text('Invalid percentile range.')
-        else:
-            st.text(f"'{chosen_trait}' percentile range:")
-            st.text(f"{lower}-{upper}")
-        st.markdown("""---""")
-    return feature_range, values
-
 #stores an array of the indexes for the set of filtered questions:
 indexes = qs.index.values
 qs = qs.reset_index()
@@ -207,31 +209,57 @@ elif chosen_q_num != '': #if the user has selected a question
     #plot a histogram displaying the counts of each remaining option:
     count = px.histogram(ok1, x=q_number, text_auto=True)
     st.plotly_chart(count,theme="streamlit")
-    df_check = st.checkbox('Display dataframe', value=False)
-    if df_check:
-        st.dataframe(ok1)
-    corr_matrix_check = st.checkbox('Display correlation matrix', value=False)
-    if corr_matrix_check:
-        #plot a correlation matrix of all the features:
-        corr_mat = ok1.corr().round(3)
-        st.write(corr_mat)
-        st.text('Heatmap:')
-        fig = plt.figure(figsize = (100,50))
-        heat_map = sns.heatmap(corr_mat, annot = True)
-        st.pyplot(fig)
     st.markdown("""---""")
-    st.sidebar.subheader("Please choose features to be included in the model:")
-    keys_traits = list(traits.keys())
-    chosen_traits = st.sidebar.multiselect("Choose traits to include:", 
+    st.sidebar.subheader("Please filter the demographic:")
+    keys_traits = list(traits.keys()) #the keys of the traits dictionary
+    #multi-selection tool in the sidebar to select traits:
+    chosen_traits = st.sidebar.multiselect("Traits:", 
                                    options=keys_traits, default=None)
-    if len(chosen_traits) > 0:
+    if len(chosen_traits) > 0: #if the user has chosen at least one trait
         st.subheader("Chosen traits:")
-        num_chosen_traits = len(chosen_traits)
-        feature_range, values = percentile_range()
+        feature_range, trait_id = percentile_range()
         st.write(feature_range)
-        st.write(*values)
-    else:
-        st.text('Please choose a selection of features.')
+        st.write(*trait_id)
+    #selectbox in the sidebar for the user to choose a category to filter by:
+    chosen_gender = st.sidebar.selectbox("Gender:", 
+                                   options=gender, index=0)
+    #selectboxes for other groups of categories:
+    chosen_orientation=st.sidebar.selectbox("Orientation:",
+                                   options=orientation, index=0)
+    chosen_ethnicity=st.sidebar.selectbox("Ethnicity:",
+                                   options=ethnicity, index=0)
+    chosen_religion=st.sidebar.selectbox("Religion:",
+                                   options=religion, index=0)
+    chosen_uni=st.sidebar.selectbox("University status:",
+                                   options=uni, index=0)
+    chosen_substances=st.sidebar.selectbox("Substances:",
+                                   options=substances, index=0)
+    #checkboxes in the sidebar:
+    have_kids = st.sidebar.checkbox('Have kids', value=False)
+    no_kids = st.sidebar.checkbox("Don't have kids", value=False)
+    if have_kids:
+        ok1 = ok1[ok1['kids'] == 1] #only include people with kids
+    elif no_kids:
+        ok1 = ok1[ok1['kids'] == 0] #only include people with no kids
+    #list of all chosen categories:
+    chosen_all = ([chosen_gender] + [chosen_orientation] + [chosen_ethnicity]
+                  + [chosen_religion] + [chosen_uni] + [chosen_substances])
+    chosen_all = list(filter(None, chosen_all)) #remove blank values
+    if len(chosen_all) > 0: #if the user has chosen at least one category
+        ok_list = [] #list of datasets
+        for category in chosen_all: #loop over each chosen category
+            #create new dataset that only contains 1s in the chosen category,
+            # and append this to the list of datasets:
+            ok2 = ok1.copy()
+            ok_list.append(ok2[ok2[category] == 1])
+        #redefine original dataset as concatenation of list of datasets with
+        # duplicates dropped:
+        ok1 = pd.concat(ok_list).drop_duplicates().reset_index(drop=True)
+        for category in chosen_all: #loop over each chosen category once more
+            ok1 = ok1[ok1[category] == 1] #keep only 
+        st.dataframe(ok1)
+    # else:
+    #     st.text('Please filter the demographic.')
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """
             <style>
