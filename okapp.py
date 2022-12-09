@@ -27,7 +27,9 @@ st.set_page_config(page_title="OKCupid Data Analysis",
 #singleton functions run once and then do nothing if called again:
 @st.experimental_singleton
 def load_dataset():
-    #function to load the dataset and list of features.
+    '''
+    Function to load the dataset and list of features.
+    '''
     ok = pd.read_csv("ok.csv")
     with open('features.txt', 'r') as f: #read list of features from text file
         lines = f.readlines()
@@ -35,11 +37,15 @@ def load_dataset():
         for l in lines:
             features.append(l.replace("\n",""))
     return ok, features
-#this function runs only once to avoid loading the dataset each update:
+#this function runs only once to avoid loading the dataset each refreshment:
 ok,features = load_dataset()
 @st.experimental_singleton
 def load_qs_and_traits(features):
-    #function to load questions + traits information.
+    '''
+    Function to load questions + traits information.
+    Returns combined questions + traits dataset, questions dataset, 
+    traits dataset
+    '''
     qs_and_traits = pd.read_csv("question_data.csv",';')
     #keep only the questions:
     qs = qs_and_traits[:-79] #remove traits
@@ -48,12 +54,13 @@ def load_qs_and_traits(features):
     #now use list of features to keep only the traits:
     traits = qs_and_traits[qs_and_traits.iloc[:,0].isin(features)] #remove qs
     return qs_and_traits, qs_total, qs, traits
-#this function runs only once:
 qs_and_traits, qs_total, qs, traits = load_qs_and_traits(features)
 @st.experimental_singleton
 def load_new_features():
-    #function to load list of new features created in 'clean_dataset.py'.
-    #returns lists of features sorted into appropriate groups.
+    '''
+    Function to load list of new features created in 'clean_dataset.py'.
+    Returns lists of features sorted into appropriate groups.
+    '''
     with open("new_features.txt", "rb") as f:
         new_features = pickle.load(f)
     #create lists for each group of newly created features:
@@ -74,13 +81,19 @@ def load_new_features():
  substances, orientation, gender) = load_new_features()
 @st.experimental_singleton
 def traits_dictionary(traits):
-    #function to create dictionary for personality traits
+    '''
+    Function to create dictionary for personality traits and other continuous
+    variables.
+    '''
     traits = traits.set_index('text').to_dict()['Unnamed: 0']
     return traits
 traits = traits_dictionary(traits) #this function runs only once
 #reuseable functions:
 def display_questions(qs):
-    #loops over questions, show the question and possible answers for each:
+    '''
+    Function that loops over the filtered questions and shows the question 
+    and possible answers for each.
+    '''
     for index, row in qs.iterrows():
         st.text(f"Q{index+1}: {row['text']}")
         st.text("")
@@ -93,11 +106,12 @@ def display_questions(qs):
             st.text(f"Option 4: {row['option_4']}")
         st.markdown("""---""")
 def display_chosen_question(chosen_q):
-    #displays the chosen question and options to the user.
-    #returns list of associated options.
+    '''
+    Function that displays the chosen question and options to the user.
+    Returns list of associated options.
+    '''
     st.subheader("Chosen question:")
     st.text(f"{chosen_q.iloc[0]['text']}")
-    st.text("")
     options = [] #list to contain all options associated with chosen question
     option1 = chosen_q.iloc[0]['option_1']
     options.append(option1)
@@ -115,9 +129,11 @@ def display_chosen_question(chosen_q):
         st.text(f"Option 4: {option4}")
     return options
 def filter_chosen_question():
-    #function to filter all question data in the dataset except for the chosen
-    # question.
-    #returns filtered dataset and chosen question id.
+    '''
+    Function to filter out all question data in the dataset except for the
+    chosen question.
+    '''
+    #returns filtered dataset and chosen question ID.
     q_index = indexes[chosen_q_int-1] #finds the index of the chosen question
     indexes_of_qs_and_traits = qs_and_traits['Unnamed: 0']
     #finds the question number associated with the index:
@@ -129,11 +145,42 @@ def filter_chosen_question():
     #removes rows where the question column has no data:
     ok1 = ok1.dropna(subset=[q_number])
     return ok1, q_number
+def plot_histogram(demographic):
+    '''
+    Function to plot a histogram showing the counts of each option of the
+    chosen question for a particular demographic.
+    '''
+    count = px.histogram(ok1, x=q_number, title=(f'{demographic} countplot:'),
+                         text_auto=True)
+    #set the order of categories to be alphabetically ascending:
+    count.update_xaxes(categoryorder='category ascending')
+    st.plotly_chart(count,theme="streamlit")
+def display_probabilities(demographic):
+    '''
+    Function to display the probabilities of an individual in the demographic
+    selecting any one of the options of the chosen question.
+    '''
+    #series containing the counts of each option:
+    counts = ok1[q_number].value_counts()
+    st.text("Probability of an individual choosing each option from "
+            f"{demographic}:")
+    st.text("")
+    num_options = len(counts)
+    for i in range(num_options): #loop over number of options
+        p = counts[i]/np.sum(counts) #probability of the option being selected
+        if i==0: #the option with the highest counts
+            st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
+        elif i==num_options-1: #the option with the lowest counts
+            st.text(f"{counts.index[i]} : {int(100*p)}% (least likely)")
+        else:
+            st.text(f"{counts.index[i]} : {int(100*p)}%")
 def percentile_range():
-    #function to provide percentile range sliders to allow the user to choose
-    # the percentile range over which to filter the traits.
-    #returns matrix of percentile range boundary values and associated trait
-    # identifiers.
+    '''
+    Function to provide percentile range sliders to allow the user to choose
+    the percentile range over which to filter the traits.
+    Returns matrix of percentile range boundary values and associated trait
+    identifiers.
+    '''
     num_chosen_traits = len(chosen_traits)
     selected_range = np.zeros(shape=(num_chosen_traits,2)) #define empty matrix
     lower = 0
@@ -175,8 +222,10 @@ def percentile_range():
         st.markdown("""---""")
     return selected_range, chosen_trait_ids
 def filter_traits(dataset):
-    #function to filter dataset by selected traits and their associated
-    # selected percentile range.
+    '''
+    Function to filter the dataset by selected traits and their associated 
+    selected percentile range.
+    '''
     trait_ids = list(traits.values()) #list of trait ids from traits dictionary
     #subtract list of chosen trait ids from list of all trait ids:
     trait_ids_to_remove = list((Counter(trait_ids) - 
@@ -194,6 +243,9 @@ def filter_traits(dataset):
         ok1 = ok1[(ok1[trait] >= lowerbound) & (ok1[trait] <= upperbound)]
     return ok1
 def filter_categoricals(ok1):
+    '''
+    Function to filter the dataset by the categorical variables of the demographic chosen by the user.
+    '''
     ok_list = [] #list of datasets
     for category in chosen_all: #loop over each chosen category
         #create new dataset that only contains 1s in the chosen category,
@@ -207,37 +259,6 @@ def filter_categoricals(ok1):
         #keep only rows containing a 1 for every chosen category:
         ok1 = ok1[ok1[category] == 1]
     return ok1
-def create_options_dict():
-    #function that creates an alphabetically sorted dictionary for the chosen
-    # question options.
-    #this dictionary is used to ensure the countplot bars always appear in the
-    # same order.
-    chosen_options = [*(ok1[q_number].unique())] #list of unique options
-    chosen_options = [x for x in chosen_options if str(x) != 'nan'] #remove NaN
-    chosen_options.sort() #sort alphabetically
-    options_dict = defaultdict(list) #create a default dictionary
-    for option in chosen_options: #loop over options
-        #append each option to the dictionary key and value:
-        options_dict[option].append(option)
-    options_dict = dict(options_dict)
-    return options_dict
-def display_probabilities(demographic):
-    #function to display the probabilities of an individual in the demographic
-    # selecting each option of the chosen question.
-    #series containing the counts of each option:
-    counts = ok1[q_number].value_counts()
-    st.text("Probability of an individual choosing each option from "
-            f"{demographic}:")
-    st.text("")
-    num_options = len(counts)
-    for i in range(num_options): #loop over number of options
-        p = counts[i]/np.sum(counts) #probability of the option being selected
-        if i==0: #the option with the highest counts
-            st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
-        elif i==num_options-1: #the option with the lowest counts
-            st.text(f"{counts.index[i]} : {int(100*p)}% (least likely)")
-        else:
-            st.text(f"{counts.index[i]} : {int(100*p)}%")
 st.sidebar.subheader("Please filter and select a question:")
 #list of keywords to help the user filter the (2541) questions:
 list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
@@ -267,33 +288,28 @@ if chosen_q_num == '': #initial layout before selection of a question
     st.text(f"{len(qs)}")
     st.text("")
     if len(qs) < len(qs_total): #if the user has selected a keyword
-        if len(qs) != 0:
+        if len(qs) != 0: #if there are questions to display
             st.subheader("Questions associated with keyword(s):")
             st.markdown("##")
-        else: #if there are no questions associated with selected keywords
+            display_questions(qs)
+        else: #if there are no questions associated with selected keyword(s)
             st.text("Please remove keyword(s).")
-        display_questions(qs)
     else: #if the user has not yet selected a keyword
         st.text('To display questions, please select a keyword.')
 elif chosen_q_num != '': #if the user has selected a question
     chosen_q_int = int(chosen_q_num)
     chosen_q = qs.iloc[[chosen_q_int-1]] #selects the chosen question
-    #displays chosen question and associated options to the user:
-    options = display_chosen_question(chosen_q)
-    #filter dataset by chosen question:
-    ok1, q_number = filter_chosen_question()
+    options = display_chosen_question(chosen_q) #display chosen question
+    ok1, q_number = filter_chosen_question() #filter dataset by chosen question
     #multi-selection tool in the sidebar for options the user wishes to remove:
     options_remove = st.sidebar.multiselect("Select categories to remove:",
                                             options=options, default=None)
     for option in options_remove: #loop over options to remove
         #keep only rows with values not equal to the option to remove
         ok1 = ok1[ok1[q_number] != option]
-    options_dict = create_options_dict() #dictionary of remaining options
     #plot a histogram displaying the counts of each remaining option:
-    count = px.histogram(ok1, x=q_number, title='Population countplot:',
-                         text_auto=True, category_orders=options_dict)
-    st.plotly_chart(count,theme="streamlit")
-    display_probabilities('population')
+    plot_histogram('Population')
+    display_probabilities('population') #display probabilities of each option
     st.markdown("""---""")
     st.sidebar.subheader("Please filter the demographic:")
     #selectboxes in the sidebar for the user to choose a category to filter by:
@@ -321,10 +337,17 @@ elif chosen_q_num != '': #if the user has selected a question
     elif no_kids:
         made_selection = True
         ok1 = ok1[ok1['kids'] == 0] #only include people with no kids
-    keys_traits = list(traits.keys()) #the keys of the traits dictionary
+    keys = list(traits.keys()) #the keys of the traits dictionary
+    keys_traits = keys[0:50] #just the personality traits
+    keys_other = keys[50:53] #just the other continuous variables
     #multi-selection tool in the sidebar to select traits:
     chosen_traits = st.sidebar.multiselect("Traits:", 
                                    options=keys_traits, default=None)
+    #multi-selection tool in the sidebar to select other continuous variables:
+    chosen_other = st.sidebar.multiselect("Other:", 
+                                   options=keys_other, default=None)
+    #lump all continuous features together in 'chosen_traits':
+    chosen_traits = [*chosen_traits] + [*chosen_other]
     if len(chosen_traits) > 0: #if the user has chosen at least one trait
         made_selection = True
         st.subheader("Chosen traits:")
@@ -332,18 +355,15 @@ elif chosen_q_num != '': #if the user has selected a question
         selected_range, chosen_trait_ids = percentile_range()
         ok1 = filter_traits(ok1) #filter the dataset accordingly
     if made_selection: #if the user has filtered the demographic in some way
+        st.subheader('Chosen demographic analysis:')
         #plot a histogram displaying the counts of each option of the selected
         # demographic:
-        st.subheader('Chosen demographic analysis:')
-        count = px.histogram(ok1, x=q_number, text_auto=True,
-                             title='Chosen demographic countplot:',
-                             category_orders=options_dict)
-        st.plotly_chart(count,theme="streamlit")
+        plot_histogram('Chosen demographic')
         display_probabilities('chosen demographic')
+        st.markdown("##")
         #option to display filtered dataframe:
         df_check = st.checkbox('Display dataframe', value=False)
         if df_check:
-            st.text("")
             st.dataframe(ok1)
     else: #if the user has not filtered the demographic in some way
         st.text('Please filter the demographic.')
