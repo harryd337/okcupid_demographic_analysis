@@ -135,7 +135,7 @@ def percentile_range():
     #returns matrix of percentile range boundary values and associated trait
     # identifiers.
     num_chosen_traits = len(chosen_traits)
-    feature_range = np.zeros(shape=(num_chosen_traits,2)) #define empty matrix
+    selected_range = np.zeros(shape=(num_chosen_traits,2)) #define empty matrix
     lower = 0
     upper = 0
     chosen_trait_ids = []
@@ -154,8 +154,8 @@ def percentile_range():
                                 min_value=0, max_value=100, value=100,
                                 key=(f"{chosen_trait}.high"))
         #add the selected percentile range boundaries to the matrix of ranges:
-        feature_range[t,0] = lower
-        feature_range[t,1] = upper
+        selected_range[t,0] = lower
+        selected_range[t,1] = upper
         #display the chosen range to the user:
         if lower == 0 and upper != 0: #bottom boundary / entire range
             if upper == 100: #if entire range selected
@@ -173,8 +173,8 @@ def percentile_range():
             st.text("Chosen percentile range:")
             st.text(f"{lower}-{upper}")
         st.markdown("""---""")
-    return feature_range, chosen_trait_ids
-def filter_traits(ok1):
+    return selected_range, chosen_trait_ids
+def filter_traits(dataset):
     #function to filter dataset by selected traits and their associated
     # selected percentile range.
     trait_ids = list(traits.values()) #list of trait ids from traits dictionary
@@ -182,15 +182,16 @@ def filter_traits(ok1):
     trait_ids_to_remove = list((Counter(trait_ids) - 
                                 Counter(chosen_trait_ids)).elements())
     #drop traits the user has not selected:
-    ok1 = ok1.drop(columns=[*trait_ids_to_remove])
+    ok1 = dataset.drop(columns=[*trait_ids_to_remove])
     for i, trait in enumerate(chosen_trait_ids): #loop over chosen traits
         #lower and upper bounds are defined by the chosen percentile range
-        # boundary values, contained in the 'feature_range' matrix, scaled to
-        # the range of trait values (-100-100)
-        lowerbound = feature_range[i,0]*0.01*200-100
-        upperbound = feature_range[i,1]*0.01*200-100
+        # boundary values, contained in the 'selected_range' matrix, scaled to
+        # the range of trait values
+        total_range = ok1[trait].max()-ok1[trait].min()
+        lowerbound = selected_range[i,0]*0.01*total_range+ok1[trait].min()
+        upperbound = selected_range[i,1]*0.01*total_range+ok1[trait].min()
         #use lower and upper bounds to filter the dataset accordingly:
-        ok1 = ok1[(ok1[trait] > lowerbound) & (ok1[trait] < upperbound)]
+        ok1 = ok1[(ok1[trait] >= lowerbound) & (ok1[trait] <= upperbound)]
     return ok1
 def filter_categoricals(ok1):
     ok_list = [] #list of datasets
@@ -206,12 +207,27 @@ def filter_categoricals(ok1):
         #keep only rows containing a 1 for every chosen category:
         ok1 = ok1[ok1[category] == 1]
     return ok1
-def display_probabilities():
-    #function to display the probabilities of the chosen demographic selecting
-    # each option of the chosen question.
+def create_options_dict():
+    #function that creates an alphabetically sorted dictionary for the chosen
+    # question options.
+    #this dictionary is used to ensure the countplot bars always appear in the
+    # same order.
+    chosen_options = [*(ok1[q_number].unique())] #list of unique options
+    chosen_options = [x for x in chosen_options if str(x) != 'nan'] #remove NaN
+    chosen_options.sort() #sort alphabetically
+    options_dict = defaultdict(list) #create a default dictionary
+    for option in chosen_options: #loop over options
+        #append each option to the dictionary key and value:
+        options_dict[option].append(option)
+    options_dict = dict(options_dict)
+    return options_dict
+def display_probabilities(demographic):
+    #function to display the probabilities of an individual in the demographic
+    # selecting each option of the chosen question.
     #series containing the counts of each option:
     counts = ok1[q_number].value_counts()
-    st.text('Probability of each option from chosen demographic:')
+    st.text("Probability of an individual choosing each option from "
+            f"{demographic}:")
     st.text("")
     num_options = len(counts)
     for i in range(num_options): #loop over number of options
@@ -272,23 +288,14 @@ elif chosen_q_num != '': #if the user has selected a question
     for option in options_remove: #loop over options to remove
         #keep only rows with values not equal to the option to remove
         ok1 = ok1[ok1[q_number] != option]
+    options_dict = create_options_dict() #dictionary of remaining options
     #plot a histogram displaying the counts of each remaining option:
     count = px.histogram(ok1, x=q_number, title='Population countplot:',
-                         text_auto=True)
+                         text_auto=True, category_orders=options_dict)
     st.plotly_chart(count,theme="streamlit")
+    display_probabilities('population')
     st.markdown("""---""")
     st.sidebar.subheader("Please filter the demographic:")
-    keys_traits = list(traits.keys()) #the keys of the traits dictionary
-    #multi-selection tool in the sidebar to select traits:
-    chosen_traits = st.sidebar.multiselect("Traits:", 
-                                   options=keys_traits, default=None)
-    made_selection = False
-    if len(chosen_traits) > 0: #if the user has chosen at least one trait
-        made_selection = True
-        st.subheader("Chosen traits:")
-        #percentile range sliders for the chosen traits:
-        feature_range, chosen_trait_ids = percentile_range()
-        ok1 = filter_traits(ok1) #filter the dataset accordingly
     #selectboxes in the sidebar for the user to choose a category to filter by:
     chosen_gender = st.sidebar.selectbox("Gender:", options=gender)
     chosen_orientation = st.sidebar.selectbox("Orientation:",
@@ -301,6 +308,7 @@ elif chosen_q_num != '': #if the user has selected a question
     chosen_all = ([chosen_gender] + [chosen_orientation] + [chosen_ethnicity]
                   + [chosen_religion] + [chosen_uni] + [chosen_substances])
     chosen_all = list(filter(None, chosen_all)) #remove blank values
+    made_selection = False
     if len(chosen_all) > 0: #if the user has chosen at least one category
         made_selection = True
         ok1 = filter_categoricals(ok1)
@@ -313,13 +321,25 @@ elif chosen_q_num != '': #if the user has selected a question
     elif no_kids:
         made_selection = True
         ok1 = ok1[ok1['kids'] == 0] #only include people with no kids
+    keys_traits = list(traits.keys()) #the keys of the traits dictionary
+    #multi-selection tool in the sidebar to select traits:
+    chosen_traits = st.sidebar.multiselect("Traits:", 
+                                   options=keys_traits, default=None)
+    if len(chosen_traits) > 0: #if the user has chosen at least one trait
+        made_selection = True
+        st.subheader("Chosen traits:")
+        #percentile range sliders for the chosen traits:
+        selected_range, chosen_trait_ids = percentile_range()
+        ok1 = filter_traits(ok1) #filter the dataset accordingly
     if made_selection: #if the user has filtered the demographic in some way
         #plot a histogram displaying the counts of each option of the selected
         # demographic:
+        st.subheader('Chosen demographic analysis:')
         count = px.histogram(ok1, x=q_number, text_auto=True,
-                            title='Chosen demographic countplot:')
+                             title='Chosen demographic countplot:',
+                             category_orders=options_dict)
         st.plotly_chart(count,theme="streamlit")
-        display_probabilities()
+        display_probabilities('chosen demographic')
         #option to display filtered dataframe:
         df_check = st.checkbox('Display dataframe', value=False)
         if df_check:
@@ -336,18 +356,3 @@ hide_st_style = """
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
-#%%
-# def display_probabilities():
-#     counts = ok1[q_number].value_counts()
-#     st.text('Probability of selection of each option from chosen demographic:')
-#     num_options = len(counts)
-#     for i in range(num_options):
-#         counts[i]
-#         counts.index[i]
-#         p = counts[i]/np.sum(counts)
-#         if i==0:
-#             st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
-#         elif i==num_options-1:
-#             st.text(f"{counts.index[i]} : {int(100*p)}% (least likely)")
-#         else:
-#             st.text(f"{counts.index[i]} : {int(100*p)}%")
