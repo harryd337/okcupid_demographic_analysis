@@ -145,21 +145,25 @@ def percentile_range():
         chosen_trait_ids.append(traits[chosen_trait])
         st.text(f"'{chosen_trait}'")
         #slider on mainpage to allow the user to select the lower percentile
-        # range boundary for the trait:
+        # range boundary for the trait (default value 0):
         lower = st.slider('Choose lower percentile range boundary:', 
                                 min_value=0, max_value=100,
                                 key=(f"{chosen_trait}.low"))
-        #slider for the upper boundary:
+        #slider for the upper boundary (default value 100):
         upper = st.slider('Choose upper percentile range boundary:', 
-                                min_value=0, max_value=100,
+                                min_value=0, max_value=100, value=100,
                                 key=(f"{chosen_trait}.high"))
         #add the selected percentile range boundaries to the matrix of ranges:
         feature_range[t,0] = lower
         feature_range[t,1] = upper
         #display the chosen range to the user:
-        if lower == 0 and upper != 0: #lower boundary
-            st.text("Chosen percentile range:")
-            st.text(f"{lower}-{upper} (bottom {upper}%)")
+        if lower == 0 and upper != 0: #bottom boundary / entire range
+            if upper == 100: #if entire range selected
+                st.text("Chosen percentile range:")
+                st.text("Entire range (100%)")
+            else: #if bottom boundary selected
+                st.text("Chosen percentile range:")
+                st.text(f"{lower}-{upper} (bottom {upper}%)")
         elif lower != 0 and upper == 100: #upper boundary
             st.text("Chosen percentile range:")
             st.text(f"{lower}-{upper} (top {upper-lower}%)")
@@ -202,6 +206,22 @@ def filter_categoricals(ok1):
         #keep only rows containing a 1 for every chosen category:
         ok1 = ok1[ok1[category] == 1]
     return ok1
+def display_probabilities():
+    #function to display the probabilities of the chosen demographic selecting
+    # each option of the chosen question.
+    #series containing the counts of each option:
+    counts = ok1[q_number].value_counts()
+    st.text('Probability of each option from chosen demographic:')
+    st.text("")
+    num_options = len(counts)
+    for i in range(num_options): #loop over number of options
+        p = counts[i]/np.sum(counts) #probability of the option being selected
+        if i==0: #the option with the highest counts
+            st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
+        elif i==num_options-1: #the option with the lowest counts
+            st.text(f"{counts.index[i]} : {int(100*p)}% (least likely)")
+        else:
+            st.text(f"{counts.index[i]} : {int(100*p)}%")
 st.sidebar.subheader("Please filter and select a question:")
 #list of keywords to help the user filter the (2541) questions:
 list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
@@ -297,11 +317,13 @@ elif chosen_q_num != '': #if the user has selected a question
         #plot a histogram displaying the counts of each option of the selected
         # demographic:
         count = px.histogram(ok1, x=q_number, text_auto=True,
-                            title='Selected demographic countplot:')
+                            title='Chosen demographic countplot:')
         st.plotly_chart(count,theme="streamlit")
+        display_probabilities()
         #option to display filtered dataframe:
         df_check = st.checkbox('Display dataframe', value=False)
         if df_check:
+            st.text("")
             st.dataframe(ok1)
     else: #if the user has not filtered the demographic in some way
         st.text('Please filter the demographic.')
@@ -314,3 +336,18 @@ hide_st_style = """
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
+#%%
+# def display_probabilities():
+#     counts = ok1[q_number].value_counts()
+#     st.text('Probability of selection of each option from chosen demographic:')
+#     num_options = len(counts)
+#     for i in range(num_options):
+#         counts[i]
+#         counts.index[i]
+#         p = counts[i]/np.sum(counts)
+#         if i==0:
+#             st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
+#         elif i==num_options-1:
+#             st.text(f"{counts.index[i]} : {int(100*p)}% (least likely)")
+#         else:
+#             st.text(f"{counts.index[i]} : {int(100*p)}%")
