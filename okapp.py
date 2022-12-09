@@ -4,15 +4,35 @@
 #@author: Harry Durnberger
 
 #This local app is run in the browser. It is used to provide an easy-to-use
-# GUI to help the user process the OKCupid dataset, with the aim of generating
-# an accurate ML model trained to predict answers given to a selected question.
+# GUI to help the user filter the demographic of the OKCupid dataset, and 
+# observe this demographic's probabilities of giving particular answers to a 
+# selected question, in comparison to the full population.
 
 #The user can select keywords to filter the 2541 questions. The filtered
-# questions are displayed. The user may then choose their desired question.
+# questions are displayed. The user may then choose a question.
 
 #A countplot is displayed for the chosen question's data. The user may choose
 # to remove one or many categories (options) associated with the question. The
 # countplot and dataset will update accordingly.
+
+#Probabilities of the population giving any one of the options of the chosen
+# question are displayed, with the most likey and least likely options
+# highlighted.
+
+#The user is then able to filter the demographic via drop-downs in the sidebar.
+# The demographic may be filtered by categorical background information, or by
+# continuous personality trait percentile ranges, or by a combination of an
+# arbitrary number of both.
+
+#Upon selecting a personality trait, sliders for the lower and upper bounds of
+# the chosen trait appear to the user. The user may use these to select the
+# percentile range of the trait by which the dataset will be filtered by.
+
+#After the user has selected the demographic, a new corresponding countplot is
+# displayed for the chosen question's data, specific to the chosen demographic.
+# Probabilities of the chosen demographic giving any one of the options of the
+# chosen question are then displayed, with the most likey and least likley
+# options highlighted.
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -244,7 +264,8 @@ def filter_traits(dataset):
     return ok1
 def filter_categoricals(ok1):
     '''
-    Function to filter the dataset by the categorical variables of the demographic chosen by the user.
+    Function to filter the dataset by the categorical variables of the 
+    demographic chosen by the user.
     '''
     ok_list = [] #list of datasets
     for category in chosen_all: #loop over each chosen category
@@ -334,7 +355,7 @@ elif chosen_q_num != '': #if the user has selected a question
     if have_kids:
         made_selection = True
         ok1 = ok1[ok1['kids'] == 1] #only include people with kids
-    elif no_kids:
+    if no_kids:
         made_selection = True
         ok1 = ok1[ok1['kids'] == 0] #only include people with no kids
     keys = list(traits.keys()) #the keys of the traits dictionary
@@ -355,16 +376,17 @@ elif chosen_q_num != '': #if the user has selected a question
         selected_range, chosen_trait_ids = percentile_range()
         ok1 = filter_traits(ok1) #filter the dataset accordingly
     if made_selection: #if the user has filtered the demographic in some way
-        st.subheader('Chosen demographic analysis:')
-        #plot a histogram displaying the counts of each option of the selected
-        # demographic:
-        plot_histogram('Chosen demographic')
-        display_probabilities('chosen demographic')
-        st.markdown("##")
-        #option to display filtered dataframe:
-        df_check = st.checkbox('Display dataframe', value=False)
-        if df_check:
-            st.dataframe(ok1)
+        if len(ok1[q_number]) == 0:
+            st.text('No data for chosen demographic.')
+        else:
+            st.subheader('Chosen demographic analysis:')
+            plot_histogram('Chosen demographic')
+            display_probabilities('chosen demographic')
+            st.markdown("##")
+            #option to display filtered dataframe:
+            df_check = st.checkbox('Display dataframe', value=False)
+            if df_check:
+                st.dataframe(ok1)
     else: #if the user has not filtered the demographic in some way
         st.text('Please filter the demographic.')
 # ---- HIDE STREAMLIT STYLE ----
