@@ -7,32 +7,6 @@
 # GUI to help the user filter the demographic of the OKCupid dataset, and 
 # observe this demographic's probabilities of giving particular answers to a 
 # selected question, in comparison to the full population.
-
-#The user can select keywords to filter the 2541 questions. The filtered
-# questions are displayed. The user may then choose a question.
-
-#A countplot is displayed for the chosen question's data. The user may choose
-# to remove one or many categories (options) associated with the question. The
-# countplot and dataset will update accordingly.
-
-#Probabilities of the population giving any one of the options of the chosen
-# question are displayed, with the most likey and least likely options
-# highlighted.
-
-#The user is then able to filter the demographic via drop-downs in the sidebar.
-# The demographic may be filtered by categorical background information, or by
-# continuous personality trait percentile ranges, or by a combination of an
-# arbitrary number of both.
-
-#Upon selecting a personality trait, sliders for the lower and upper bounds of
-# the chosen trait appear to the user. The user may use these to select the
-# percentile range of the trait by which the dataset will be filtered by.
-
-#After the user has selected the demographic, a new corresponding countplot is
-# displayed for the chosen question's data, specific to the chosen demographic.
-# Probabilities of the chosen demographic giving any one of the options of the
-# chosen question are then displayed, with the most likey and least likley
-# options highlighted.
 import pandas as pd
 import plotly.express as px
 import streamlit as st

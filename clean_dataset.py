@@ -8,8 +8,12 @@
 #binarises categorical features;
 #merges minority categories.
 
+#Due to the messy nature of the dataset, most of these processes must be
+# carried out manually, but are automated when possible.
+
 #Cleaned dataset is written to "ok.csv".
-#List of features is written to "features.txt".
+#List of total features is written to "features.txt".
+#List of newly created features is written to "new_features.txt"
 import numpy as np
 import pandas as pd
 import pickle
@@ -22,10 +26,10 @@ ok = ok.drop(columns=['lf_single', 'd_religion_seriosity', 'CA', 'gender2',
                       'd_relationship', 'lf_location', 'd_education_type', 
                       'gender_orientation', 'd_income', 'd_bodytype', 
                       'd_offspring_desires'])
+new_features = [] #list of lists of newly created features by group
 #string-like categorical features we must binarise:
 list_categorical = ['d_education_phase', 'd_religion_type', 'race',
                     'd_offspring_current']
-new_features = [] #list of lists of newly created features by group
 for feature in list_categorical: #loop over list of categorical features
     #list of unique categories of each feature:
     unique_categories = [*(ok[feature].unique())]
