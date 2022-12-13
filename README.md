@@ -10,7 +10,7 @@ This project attempts to handle a very large dataset (N=68371, 2620 variables) f
 
 The program 'clean_dataset.py' is used to clean the the dataset, i.e. removing irrelevant and useless features; binarising categorical features; merging minority features. The cleaned dataset is written to 'ok.csv'. The list of surviving and newly created features is written to 'features.txt'. A list of only the newly created features is written to 'new_features.txt'.
 
-These files are then loaded by the program 'okapp.py'. This is a streamlit application that is run locally and interacted with via the browser. It is used to provide an easy-to-use GUI to help the user filter the demographic of the OKCupid dataset, and observe this demographic's probabilities of giving particular answers to a selected question, in comparison to the full population.
+These files are then loaded by the program 'okapp.py'. This is a streamlit application that is run locally and interacted with via the browser. It is used to provide an easy-to-use GUI to help the user filter the demographic of the OKCupid dataset, and observe this demographic's probabilities of giving particular answers to a selected question, in comparison to that of the full population.
 
 ## Use of 'okapp.py':
 
