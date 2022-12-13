@@ -14,7 +14,9 @@ These files are then loaded by the program 'okapp.py'. This is a streamlit appli
 
 ## Use of 'okapp.py':
 
-To run as streamlit application in the browser, go to Anaconda prompt and execute:
+If you'd like to run the app with the cleaned dataset, download 'okapp.py', 'ok.csv', 'features.txt' and 'new_features.txt' into the same directory.
+
+To run the app as a streamlit application in the browser, go to Anaconda prompt and execute:
 
 ```
 streamlit run okapp.py
