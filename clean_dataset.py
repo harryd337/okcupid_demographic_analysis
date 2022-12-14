@@ -46,7 +46,7 @@ for feature in list_categorical: #loop over list of categorical features
 #create new binary columns for positive categories:
 ok['Drugs often'] = np.where(ok['d_drugs'] == 'Often', 1, 0)
 ok['Smokes'] = np.where((ok['d_smokes'] == 'Yes') |
-                        (ok['d_drinks'] == 'Trying to quit'), 1, 0)
+                        (ok['d_smokes'] == 'Trying to quit'), 1, 0)
 ok['Drinks often'] = np.where((ok['d_drinks'] == 'Very often') |
                               (ok['d_drinks'] == 'Often'), 1, 0)
 #create new binary columns for majority groups:

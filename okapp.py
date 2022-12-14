@@ -1,4 +1,4 @@
-#OKCupid data analysis streamlit application.
+#OKCupid demographic analysis streamlit application.
 
 #Created on Mon Nov 21 10:13:23 2022
 #@author: Harry Durnberger
@@ -16,7 +16,7 @@ import seaborn as sns
 import pickle
 from collections import defaultdict
 from collections import Counter
-st.set_page_config(page_title="OKCupid Data Analysis",
+st.set_page_config(page_title="OKCupid Demographic Analysis",
                    page_icon=":mag:", layout="wide")
 #singleton functions run once and then do nothing if called again:
 @st.experimental_singleton
@@ -124,10 +124,10 @@ def display_chosen_question(chosen_q):
     return options
 def filter_chosen_question():
     '''
-    Function to filter out all question data in the dataset except for the
+    Function to filter out all question data in the dataset except for that of the
     chosen question.
+    Returns filtered dataset and chosen question ID.
     '''
-    #returns filtered dataset and chosen question ID.
     q_index = indexes[chosen_q_int-1] #finds the index of the chosen question
     indexes_of_qs_and_traits = qs_and_traits['Unnamed: 0']
     #finds the question number associated with the index:
@@ -217,8 +217,8 @@ def percentile_range():
     return selected_range, chosen_trait_ids
 def filter_traits(dataset):
     '''
-    Function to filter the dataset by selected traits and their associated 
-    selected percentile range.
+    Function to filter the dataset by selected continuous features (traits) 
+    and their associated selected percentile range.
     '''
     trait_ids = list(traits.values()) #list of trait ids from traits dictionary
     #subtract list of chosen trait ids from list of all trait ids:
@@ -273,12 +273,12 @@ q_nums_str = [str(x) for x in q_num_range]
 q_nums.extend(q_nums_str)
 #question number selection tool in the sidebar with blank initial value:
 chosen_q_num = st.sidebar.selectbox("Select question number:", options=q_nums)
-#stores an array of the indexes for the set of filtered questions:
+#store an array of the indexes for the set of filtered questions:
 indexes = qs.index.values #used to recover chosen question id
 qs = qs.reset_index()
 #drop unnecessary columns:
 qs=qs.drop(columns=['Unnamed: 0', 'N', 'Type', 'Order', 'Keywords', 'index'])
-if chosen_q_num == '': #initial layout before selection of a question
+if chosen_q_num == '': #initial layout before selection of a question:
     st.text("Number of questions associated with selected keyword(s):")
     st.text(f"{len(qs)}")
     st.text("")
