@@ -14,7 +14,7 @@ These files are then loaded by the program 'okapp.py'. This is a streamlit appli
 
 ## Use of 'okapp.py':
 
-'ok_env' is an environment file allowing the environment capable of running this application to be imported via Anaconda.
+An environment capable of running the application may be imported in Anaconda via the environment file, 'ok_env.yaml'.
 
 If you'd like to run the app with the cleaned dataset, download 'okapp.py', 'ok.csv' (650MB), 'question_data.csv', 'features.txt' and 'new_features.txt' into the same directory.
 
