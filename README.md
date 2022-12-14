@@ -1,20 +1,22 @@
 # Scientific Programming in Python – submission 2
 
-### Project title: GUI for filtering demographic of OKCupid dataset based on personality scales and profile information to observe corresponding probabilities of answers to personal questions
+### Project title: GUI for filtering demographic of OkCupid dataset based on personality scales and profile information to observe corresponding probabilities of answers to personal questions
 
 ### Student name: Harry Durnberger
 
-This project attempts to handle a very large dataset (N=68371, 2620 variables) from the online dating site OKCupid. The dataset consists of a total of 83 features, including basic profile information (gender, age, sexuality) and 50 personality scales (continuous) that OKCupid calculates automatically for its users. In addition, there are categorical answers given to the top 2541 questions on the site. The questions are extremely varied and many are personal, the user is incentivised to answer the questions so that the OKCupid algorithm can match them to someone with similar answers.
+This project attempts to handle a very large dataset (N=68371, 2620 variables) from the online dating site OkCupid. The dataset consists of a total of 83 features, including basic profile information (gender, age, sexuality, etc.) and 50 continuous personality scales (confidence, creativity, honesty, etc.) that OkCupid calculates automatically for its users. In addition, there are categorical answers given to the top 2541 multiple-choice questions on the site. The questions are extremely varied and many are personal, the user is incentivised to answer the questions so that the OkCupid algorithm can match them to someone with similar answers.
 
 [Paper on dataset: https://openpsych.net/files/papers/Kirkegaard_2016g.pdf]
 
 The program 'clean_dataset.py' is used to clean the the dataset, i.e. removing irrelevant and useless features; binarising categorical features; merging minority features. The cleaned dataset is written to 'ok.csv'. The list of surviving and newly created features is written to 'features.txt'. A list of only the newly created features is written to 'new_features.txt'.
 
-These files are then loaded by the program 'okapp.py'. This is a streamlit application that is run locally and interacted with via the browser. It is used to provide an easy-to-use GUI to help the user filter the demographic of the OKCupid dataset, and observe this demographic's probabilities of giving particular answers to a selected question, in comparison to the full population.
+These files are then loaded by the program 'okapp.py'. This is a streamlit application that is run locally and interacted with via the browser. It is used to provide an easy-to-use GUI to help the user filter the demographic of the OkCupid dataset, and observe this demographic's probabilities of giving particular answers to a selected question, in comparison to that of the full population.
 
 ## Use of 'okapp.py':
 
-To run as streamlit application in the browser, go to Anaconda prompt and execute:
+If you'd like to run the app with the cleaned dataset, download 'okapp.py', 'ok.csv' (650MB), 'question_data.csv', 'features.txt' and 'new_features.txt' into the same directory.
+
+To run the app as a streamlit application in the browser, go to Anaconda prompt and execute:
 
 ```
 streamlit run okapp.py
