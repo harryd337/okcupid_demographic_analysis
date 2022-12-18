@@ -2,7 +2,7 @@
 
 ### Project title: GUI for filtering demographic of OkCupid dataset based on personality scales and profile information to observe corresponding probabilities of answers to personal questions
 
-### Student name: Harry Durnberger
+### Author: Harry Durnberger
 
 This project attempts to handle a very large dataset (N=68371, 2620 variables) from the online dating site OkCupid. The dataset consists of a total of 83 features, including basic profile information (gender, age, sexuality, etc.) and 50 continuous personality scales (confidence, creativity, honesty, etc.) that OkCupid calculates automatically for its users. In addition, there are categorical answers given to the top 2541 multiple-choice questions on the site. The questions are extremely varied and many are personal, the user is incentivised to answer the questions so that the OkCupid algorithm can match them to someone with similar answers.
 
