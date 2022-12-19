@@ -6,7 +6,7 @@
 
 This project attempts to handle a very large dataset (N=68371, 2620 variables) from the online dating site OkCupid. The dataset consists of a total of 83 features, including basic profile information (gender, age, sexuality, etc.) and 50 continuous personality scales (confidence, creativity, honesty, etc.) that OkCupid calculates automatically for its users. In addition, there are categorical answers given to the top 2541 multiple-choice questions on the site. The questions are extremely varied and many are personal, the user is incentivised to answer the questions so that the OkCupid algorithm can match them to someone with similar answers.
 
-[Paper on dataset: https://openpsych.net/files/papers/Kirkegaard_2016g.pdf]
+Paper on dataset: https://openpsych.net/files/papers/Kirkegaard_2016g.pdf [Kirkegaard, E. O. W., & Bjerrekær, J. D. (2016). The OKCupid dataset: A very large public dataset of dating site users. Open Differential Psychology. https://doi.org/10.26775/odp.2016.11.03]
 
 To download the datasets, go to, https://mega.nz/folder/QIpXkL4Q#b3QXepE6tgyZ3zDhWbv1eg/folder/VIgyCDIQ, and download 'question_data.csv' and 'user_data_public.7z'. Unzip the latter and save both .csv files to the same directory.
 
@@ -16,7 +16,11 @@ These files are then loaded by the program 'okapp.py'. This is a streamlit appli
 
 ## Use of 'okapp.py':
 
-An environment capable of running the application may be imported in Anaconda via the environment file, 'ok_env.yaml'.
+An environment capable of running the application may be imported in Anaconda via the environment file, 'ok_env.yaml'. After importing the environment, you may have to manually install streamlit by executing the following command in the Anaconda prompt:
+
+```
+pip install streamlit
+```
 
 Download 'okapp.py' into the same directory as the cleaned dataset and the text files outputted from 'clean_dataset.py'.
 
