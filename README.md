@@ -16,7 +16,11 @@ These files are then loaded by the program 'okapp.py'. This is a streamlit appli
 
 ## Use of 'okapp.py':
 
-An environment capable of running the application may be imported in Anaconda via the environment file, 'ok_env.yaml'.
+An environment capable of running the application may be imported in Anaconda via the environment file, 'ok_env.yaml'. After importing the environment, you may have to manually install streamlit by executing the following command in the Anaconda prompt:
+
+```
+pip install streamlit
+```
 
 Download 'okapp.py' into the same directory as the cleaned dataset and the text files outputted from 'clean_dataset.py'.
 
