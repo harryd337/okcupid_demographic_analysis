@@ -45,3 +45,6 @@ Upon selecting a personality trait, sliders for the lower and upper bounds of th
 After the user has selected the demographic, a new corresponding countplot is displayed for the chosen question's data, specific to the chosen demographic. Probabilities of the chosen demographic giving any one of the options of the chosen question are then displayed, with the most likey and least likley options highlighted.
 
 The user also has the option to tick a box to display the dataframe containing the filtered data.
+
+##
+Feel free to fork the repo and play with / expand on the code however you like.
