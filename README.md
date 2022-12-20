@@ -36,7 +36,7 @@ From the sidebar, the user may select keywords to filter the 2541 questions usin
 
 A countplot is displayed for the chosen question's data. The user may then choose to remove one or many categories (options) associated with the question using another multi-selection widget in the sidebar. The countplot and dataset will update accordingly.
 
-Probabilities of the population giving any one of the options of the chosen question are then displayed, with the most likey and least likely options highlighted.
+Probabilities of the population giving any one of the options of the chosen question are then displayed, with the most likely and least likely options highlighted.
 
 The user is then able to filter the demographic via drop-downs in the sidebar. The demographic may be filtered by categorical background information, or by continuous personality trait percentile ranges, or by a combination of an arbitrary number of both.
 
