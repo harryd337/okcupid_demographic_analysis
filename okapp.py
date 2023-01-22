@@ -16,7 +16,7 @@ import seaborn as sns
 import pickle
 from collections import defaultdict
 from collections import Counter
-st.set_page_config(page_title="OKCupid Demographic Analysis",
+st.set_page_config(page_title="OkCupid Demographic Analysis",
                    page_icon=":mag:", layout="wide")
 #singleton functions run once and then do nothing if called again:
 @st.experimental_singleton
