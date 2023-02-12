@@ -46,5 +46,12 @@ After the user has selected the demographic, a new corresponding countplot is di
 
 The user also has the option to tick a box to display the dataframe containing the filtered data.
 
+## Example use of 'okapp.py':
+
+https://user-images.githubusercontent.com/100152207/218328778-b5176c10-57a0-4aa2-a923-2fa46cd56447.mp4
+
 ##
 Feel free to fork the repo and play with / expand on the code however you like.
+
+
+
