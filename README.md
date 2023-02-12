@@ -46,5 +46,34 @@ After the user has selected the demographic, a new corresponding countplot is di
 
 The user also has the option to tick a box to display the dataframe containing the filtered data.
 
+## Example use of 'okapp.py':
+
+The user selecting from the list of keywords:
+
+![Picture1](https://user-images.githubusercontent.com/100152207/218311708-4d1238f0-4365-495f-8467-0de8c3c6f565.png)
+
+After selection of a question:
+
+![Picture2](https://user-images.githubusercontent.com/100152207/218311762-a97f1206-35c8-4d48-9877-95b57ad53a6a.png)
+
+After removal of the ‘I’m not sure.’ option:
+
+![Picture3](https://user-images.githubusercontent.com/100152207/218311770-3cb57ebd-e793-4b6d-ab69-f5f74fea60ea.png)
+
+After selecting from a few of the categorical features:
+
+![Picture4](https://user-images.githubusercontent.com/100152207/218311777-427cdf72-85e7-48b5-b935-bf38a8463e47.png)
+
+After selecting some continuous features and adjusting their percentile sliders:
+
+![Picture5](https://user-images.githubusercontent.com/100152207/218311790-eb7d94f1-34db-4696-bca4-272a8cfefaf1.png)
+
+Final filtered demographic analysis:
+
+![Picture6](https://user-images.githubusercontent.com/100152207/218311798-35c73d4d-a529-4033-9b75-4291ea05dbaf.png)
+
 ##
 Feel free to fork the repo and play with / expand on the code however you like.
+
+
+
