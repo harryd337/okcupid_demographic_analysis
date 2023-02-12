@@ -18,8 +18,7 @@ from collections import defaultdict
 from collections import Counter
 st.set_page_config(page_title="OkCupid Demographic Analysis",
                    page_icon=":mag:", layout="wide")
-#singleton functions run once and then do nothing if called again:
-@st.experimental_singleton
+@st.cache_resource #operator to force function to run only once
 def load_dataset():
     '''
     Function to load the dataset and list of features.
@@ -31,9 +30,8 @@ def load_dataset():
         for l in lines:
             features.append(l.replace("\n",""))
     return ok, features
-#this function runs only once to avoid loading the dataset each refreshment:
-ok,features = load_dataset()
-@st.experimental_singleton
+
+@st.cache_resource
 def load_qs_and_traits(features):
     '''
     Function to load questions + traits information.
@@ -41,15 +39,14 @@ def load_qs_and_traits(features):
     traits dataset
     '''
     qs_and_traits = pd.read_csv("question_data.csv",';')
-    #keep only the questions:
-    qs = qs_and_traits[:-79] #remove traits
-    qs.Keywords = qs.Keywords.fillna('Other') #fills NaNs
+    qs = qs_and_traits[:-79] #keep only questions
+    qs.Keywords = qs.Keywords.fillna('Other')
     qs_total = qs
-    #now use list of features to keep only the traits:
-    traits = qs_and_traits[qs_and_traits.iloc[:,0].isin(features)] #remove qs
+    #keep only traits:
+    traits = qs_and_traits[qs_and_traits.iloc[:,0].isin(features)]
     return qs_and_traits, qs_total, qs, traits
-qs_and_traits, qs_total, qs, traits = load_qs_and_traits(features)
-@st.experimental_singleton
+
+@st.cache_resource
 def load_new_features():
     '''
     Function to load list of new features created in 'clean_dataset.py'.
@@ -71,9 +68,8 @@ def load_new_features():
     gender = new_features[6]
     gender.insert(0, '')
     return uni, religion, ethnicity, substances, orientation, gender
-(uni, religion, ethnicity,
- substances, orientation, gender) = load_new_features()
-@st.experimental_singleton
+
+@st.cache_resource
 def traits_dictionary(traits):
     '''
     Function to create dictionary for personality traits and other continuous
@@ -81,7 +77,7 @@ def traits_dictionary(traits):
     '''
     traits = traits.set_index('text').to_dict()['Unnamed: 0']
     return traits
-traits = traits_dictionary(traits) #this function runs only once
+
 #reuseable functions:
 def display_questions(qs):
     '''
@@ -99,6 +95,7 @@ def display_questions(qs):
         if pd.isna(row['option_4']) == False:
             st.text(f"Option 4: {row['option_4']}")
         st.markdown("""---""")
+        
 def display_chosen_question(chosen_q):
     '''
     Function that displays the chosen question and options to the user.
@@ -122,10 +119,11 @@ def display_chosen_question(chosen_q):
         options.append(option4)
         st.text(f"Option 4: {option4}")
     return options
+
 def filter_chosen_question():
     '''
-    Function to filter out all question data in the dataset except for that of the
-    chosen question.
+    Function to filter out all question data in the dataset except for that of
+    the chosen question.
     Returns filtered dataset and chosen question ID.
     '''
     q_index = indexes[chosen_q_int-1] #finds the index of the chosen question
@@ -133,12 +131,12 @@ def filter_chosen_question():
     #finds the question number associated with the index:
     q_number = (indexes_of_qs_and_traits[[q_index]]).iloc[0]
     cols = features + [q_number] #add chosen question to list of features
-    ok1 = ok.copy() #ensures original loaded dataset is not changed
+    ok1 = ok.copy()
     #cleaned dataset with all features + single 'ouput' question column:
     ok1 = ok1[cols]
-    #removes rows where the question column has no data:
     ok1 = ok1.dropna(subset=[q_number])
     return ok1, q_number
+
 def plot_histogram(demographic):
     '''
     Function to plot a histogram showing the counts of each option of the
@@ -149,6 +147,7 @@ def plot_histogram(demographic):
     #set the order of categories to be alphabetically ascending:
     count.update_xaxes(categoryorder='category ascending')
     st.plotly_chart(count,theme="streamlit")
+    
 def display_probabilities(demographic):
     '''
     Function to display the probabilities of an individual in the demographic
@@ -162,12 +161,13 @@ def display_probabilities(demographic):
     num_options = len(counts)
     for i in range(num_options): #loop over number of options
         p = counts[i]/np.sum(counts) #probability of the option being selected
-        if i==0: #the option with the highest counts
+        if i==0:
             st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
-        elif i==num_options-1: #the option with the lowest counts
+        elif i==num_options-1:
             st.text(f"{counts.index[i]} : {int(100*p)}% (least likely)")
         else:
             st.text(f"{counts.index[i]} : {int(100*p)}%")
+            
 def percentile_range():
     '''
     Function to provide percentile range sliders to allow the user to choose
@@ -176,7 +176,7 @@ def percentile_range():
     identifiers.
     '''
     num_chosen_traits = len(chosen_traits)
-    selected_range = np.zeros(shape=(num_chosen_traits,2)) #define empty matrix
+    selected_range = np.zeros(shape=(num_chosen_traits,2))
     lower = 0
     upper = 0
     chosen_trait_ids = []
@@ -215,6 +215,7 @@ def percentile_range():
             st.text(f"{lower}-{upper}")
         st.markdown("""---""")
     return selected_range, chosen_trait_ids
+
 def filter_traits(dataset):
     '''
     Function to filter the dataset by selected continuous features (traits) 
@@ -236,6 +237,7 @@ def filter_traits(dataset):
         #use lower and upper bounds to filter the dataset accordingly:
         ok1 = ok1[(ok1[trait] >= lowerbound) & (ok1[trait] <= upperbound)]
     return ok1
+
 def filter_categoricals(ok1):
     '''
     Function to filter the dataset by the categorical variables of the 
@@ -254,6 +256,13 @@ def filter_categoricals(ok1):
         #keep only rows containing a 1 for every chosen category:
         ok1 = ok1[ok1[category] == 1]
     return ok1
+
+#these loading functions run only once when the app initialises:
+ok,features = load_dataset()
+qs_and_traits, qs_total, qs, traits = load_qs_and_traits(features)
+(uni, religion, ethnicity,
+ substances, orientation, gender) = load_new_features()
+traits = traits_dictionary(traits) #this function runs only once
 st.sidebar.subheader("Please filter and select a question:")
 #list of keywords to help the user filter the (2541) questions:
 list_keywords = ['descriptive', 'preference', 'opinion', 'sex', 'intimacy',
