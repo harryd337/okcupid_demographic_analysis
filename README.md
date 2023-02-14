@@ -16,6 +16,14 @@ These files are then loaded by the program 'okapp.py'. This is a streamlit appli
 
 This app may be used as a tool for researchers or businesses to gain useful insight into a particular demographic’s opinions on divisive topics. A researcher may use this information in preparation for their own investigations. A business may use this information to better understand their target market.
 
+## Use of 'clean_dataset.py':
+
+With 'user_data_public.csv' in the same directory, 'clean_dataset.py' may be run from the terminal by executing the following command:
+
+```
+python clean_dataset.py
+```
+
 ## Use of 'okapp.py':
 
 An environment capable of running the application may be imported in Anaconda via the environment file, 'ok_env.yaml'. After importing the environment, you may have to manually install streamlit by executing the following command in the Anaconda prompt:
