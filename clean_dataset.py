@@ -13,7 +13,7 @@
 
 #Cleaned dataset is written to "ok.pkl".
 #List of total features is written to "features.txt".
-#List of newly created features is written to "new_features.txt"
+#List of newly created features is written to "new_features.txt".
 import numpy as np
 import pandas as pd
 import pickle
@@ -189,7 +189,7 @@ def save_new_features(new_features):
     Add additional groups to 'new_features'. Write this list to a .txt file.
 
     Args:
-        new_features (list): a list of lists of newly created features sorted
+        new_features (list): list of lists of newly created features sorted
         by group.
     """
     substances = ['Drugs often', 'Smokes', 'Drinks often']
