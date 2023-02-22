@@ -1,24 +1,23 @@
-#OKCupid demographic analysis streamlit application.
-
-#Created on Mon Nov 21 10:13:23 2022
-#@author: Harry Durnberger
-
-#This local app is run in the browser. It is used to provide an easy-to-use
+# OKCupid demographic analysis streamlit application.
+#
+# This local app is run in the browser.  It is used to provide an easy-to-use
 # GUI to help the user filter the demographic of the OKCupid dataset, and 
 # observe this demographic's probabilities of giving particular answers to a 
 # selected question, in comparison to the full population.
+#
+# The filtered demographic may be written to "okcupid_demographic.pkl".
+#
+# Author: Harry Durnberger
 
-#The filtered demographic may be written to "okcupid_demographic.pkl".
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 import numpy as np
 import pickle
 
-@st.cache_resource #cache outputs
+@st.cache_resource  # Cache outputs
 def load_dataset():
-    """
-    Loads the dataset and list of features.
+    """Loads the dataset and list of features.
 
     Returns:
         ok (pandas.DataFrame): cleaned OkCupid dataset.
@@ -34,11 +33,12 @@ def load_dataset():
 
 @st.cache_resource
 def load_qs_and_traits(features):
-    """
-    Loads questions and traits information. Divides information into
-    separate dataframes. The questions information is the question, options and
-    keywords associated with each question index. The traits information is the
-    name of each trait associated with each trait index.
+    """Loads questions and traits information.
+    
+    Divides information into separate dataframes. The questions information is
+    the question, options and keywords associated with each question index. The
+    traits information is the name of each trait associated with each trait
+    index.
 
     Args:
         features (list): list of all features.
@@ -53,7 +53,7 @@ def load_qs_and_traits(features):
         with all traits.
     """
     qs_and_traits = pd.read_csv("question_data.csv", sep=';')
-    qs = qs_and_traits[:-79] #keep only questions
+    qs = qs_and_traits[:-79]  # Keep only questions
     qs.Keywords = qs.Keywords.fillna('Other')
     total_questions = len(qs)
     traits = qs_and_traits[qs_and_traits.iloc[:, 0].isin(features)]
@@ -61,8 +61,7 @@ def load_qs_and_traits(features):
 
 @st.cache_resource
 def load_new_features():
-    """
-    Loads list of new features created in 'clean_dataset.py'.
+    """Loads list of new features created in 'clean_dataset.py'.
 
     Returns:
         new_features (list): list of lists of newly created features sorted
@@ -74,10 +73,10 @@ def load_new_features():
 
 @st.cache_resource
 def create_traits_dictionary(traits):
-    """
-    Creates dictionary for personality traits and other continuous
-    variables. The labels are the names of each trait or continuous variable.
-    The values are the indexes associated with each label.
+    """Creates dictionary for traits and other continuous variables.
+    
+    The labels are the names of each trait or continuous variable. The values
+    are the indexes associated with each label.
 
     Args:
         traits (pandas.DataFrame): dataframe containing information associated
@@ -90,9 +89,9 @@ def create_traits_dictionary(traits):
     return traits
 
 def filter_by_keywords(qs):
-    """
-    Sets up the keyword multi-selection tool in the sidebar. Filters the
-    questions by the selected keywords.
+    """Sets up the keyword multi-selection tool in the sidebar.
+    
+    Filters the questions by the selected keywords.
 
     Args:
         qs (pandas.DataFrame): dataframe containing information associated with
@@ -113,10 +112,10 @@ def filter_by_keywords(qs):
     return qs
 
 def initialise_question_selection(qs):
-    """
-    Sets up the question number selection tool in the sidebar. Cleans the
-    questions dataframe so it only contains questions and corresponding
-    options.
+    """Sets up the question number selection tool in the sidebar.
+    
+    Cleans the questions dataframe so it only contains questions with their
+    corresponding options.
 
     Args:
         qs (pandas.DataFrame): dataframe containing information associated with
@@ -144,9 +143,7 @@ def initialise_question_selection(qs):
     return chosen_q_num, qs, indexes, num_questions
 
 def display_questions(qs):
-    """
-    Displays the questions associated with the selected keywords and the
-    selection of options for each.
+    """Displays the filtered questions and their corresponding options.
     
     Args:
         qs (pandas.DataFrame): dataframe containing information associated with
@@ -164,8 +161,7 @@ def display_questions(qs):
         st.markdown("""---""")
 
 def initial_main_page(qs, total_questions, num_questions):
-    """
-    Sets up initial main page before selection of a question.
+    """Sets up initial main page before selection of a question.
 
     Args:
         qs (pandas.DataFrame): cleaned questions dataframe containing all/filtered questions.
@@ -187,8 +183,7 @@ def initial_main_page(qs, total_questions, num_questions):
         st.text('To display questions, please select a keyword.')
         
 def display_chosen_question(qs, chosen_q_num):
-    """
-    Displays the chosen question and associated options to the user.
+    """Displays the chosen question and associated options to the user.
 
     Args:
         qs (pandas.DataFrame): dataframe containing information associated with
@@ -221,14 +216,15 @@ def display_chosen_question(qs, chosen_q_num):
     return chosen_q_int, options
 
 def filter_chosen_question(ok, chosen_q_int, qs_and_traits, features, indexes):
-    """
+    """Remove all question data except for the chosen question.
+    
     Filters out all question data in the OkCupid dataset except for that of
     the chosen question. Finds the ID associated with the chosen question.
 
     Args:
         ok (pandas.DataFrame): cleaned OkCupid dataset.
         chosen_q_int (int): chosen question number.
-        qs_and_traits (pandas.DataFrame): dataframe containing information
+        qs_and_traits (pandas.DataFrame): dataframe containing information 
         associated with all questions and traits.
         features (list): list of all features.
         indexes (numpy.ndarray): original indexes of the unfiltered questions
@@ -247,7 +243,8 @@ def filter_chosen_question(ok, chosen_q_int, qs_and_traits, features, indexes):
     return ok1, q_number
 
 def remove_options(ok1, q_number, options):
-    """
+    """Creates tool allowing the user to select options they wish to remove.
+    
     Sets up multi-selection tool in the sidebar allowing the user to select
     options they wish to remove from the chosen question. Filters OkCupid
     dataset by removing individuals that selected the chosen option(s).
@@ -267,9 +264,10 @@ def remove_options(ok1, q_number, options):
     return ok1
 
 def categorical_selectboxes(new_features):
-    """
+    """Creates selectboxes allowing selection of categorical variables.
+    
     Sets up selectboxes in the sidebar allowing the user to select categorical
-    variables to filter by.
+    variables to filter the OkCupid dataset with.
 
     Args:
         new_features (list): list of lists of newly created features sorted
@@ -278,7 +276,7 @@ def categorical_selectboxes(new_features):
     Returns:
         chosen_all (list): list of all selected categorical variables.
     """
-    uni = new_features[0] #options of each group
+    uni = new_features[0]  # Options of each group
     religion = new_features[1]
     ethnicity = new_features[2]
     substances = new_features[3]
@@ -297,9 +295,7 @@ def categorical_selectboxes(new_features):
     return chosen_all
 
 def categorical_checkboxes():
-    """
-    Sets up checkboxes in the sidebar for the yes/no categorical variable
-    ('Have kids' or not).
+    """Creates checkboxes in the sidebar for the yes/no categorical variable.
 
     Returns:
         have_kids (bool): True if the user checks 'Have kids', False otherwise.
@@ -311,9 +307,7 @@ def categorical_checkboxes():
     return have_kids, no_kids
 
 def filter_categoricals(ok1, chosen_all):
-    """
-    Filters the OkCupid dataset by the categorical variables of the 
-    demographic chosen by the user.
+    """Filters OkCupid dataset by selected categorical variables.
 
     Args:
         ok1 (pandas.DataFrame): OkCupid dataset.
@@ -332,9 +326,9 @@ def filter_categoricals(ok1, chosen_all):
     return ok1
 
 def categorical_selection(ok1, new_features):
-    """
-    Sets up categorical selectboxes and checkboxes in the sidebar. Filters the
-    OkCupid dataset according to the user's selections.
+    """Creates categorical selectboxes and checkboxes in the sidebar.
+    
+    Filters the OkCupid dataset according to the user's selections.
 
     Args:
         ok1 (pandas.DataFrame): OkCupid dataset.
@@ -362,15 +356,17 @@ def categorical_selection(ok1, new_features):
     return ok1, made_selection
 
 def continuous_multiselect(traits):
-    """
+    """Creates tools for selecting traits and other continuous variables.
+    
     Sets up multi-select tools in the sidebar allowing the user to select
-    traits and other continuous variables to filter the OkCupid dataset by.
+    traits and other continuous variables to filter the OkCupid dataset with.
 
     Args:
         traits (dict): traits dictionary.
 
     Returns:
-        chosen_traits (list): list of chosen traits and other continuous variables.
+        chosen_traits (list): list of chosen traits and other continuous
+        variables.
     """
     keys = list(traits.keys())
     keys_traits = sorted(keys[0:50])
@@ -379,11 +375,12 @@ def continuous_multiselect(traits):
                                            options=keys_traits, default=None)
     chosen_other = st.sidebar.multiselect("Other:", 
                                           options=keys_other, default=None)
-    chosen_traits = [*chosen_traits] + [*chosen_other] #lump together
+    chosen_traits = [*chosen_traits] + [*chosen_other]  # Lump together
     return chosen_traits
 
 def percentile_range(chosen_traits, traits):
-    """
+    """Provides percentile range sliders for each chosen trait.
+    
     Provides percentile range sliders to allow the user to choose
     the percentile range over which to filter the chosen traits. Displays the
     chosen range to the user.
@@ -431,11 +428,11 @@ def percentile_range(chosen_traits, traits):
     return selected_range, chosen_trait_ids
 
 def filter_traits(ok1, selected_range, chosen_trait_ids):
-    """
-    Filters the OkCupid dataset by selected continuous features (including
-    traits) with their associated selected percentile range. The lower and
-    upper percentile bounds of each trait are scaled to the range of the trait
-    values in 'ok1'.
+    """Filters the OkCupid dataset by selected continuous variables.
+    
+    Filters each trait by the corresponding selected percentile range. The
+    lower and upper percentile bounds of each continuous variable are scaled to
+    the range of values in 'ok1'.
 
     Args:
         ok1 (pandas.DataFrame): OkCupid dataset.
@@ -454,8 +451,9 @@ def filter_traits(ok1, selected_range, chosen_trait_ids):
     return ok1
 
 def continuous_selection(ok1, made_selection, traits):
-    """
-    Sets up multi-select tools in the sidebar to allow selection of continuous
+    """Creates tools to allow selection of continuous variables.
+    
+    Creates multi-select tools in the sidebar to allow selection of continuous
     variables. Provides percentile range sliders to allow the user to choose
     the percentile range over which to filter the traits. Filters the OkCupid
     dataset according to the user's selections.
@@ -481,9 +479,10 @@ def continuous_selection(ok1, made_selection, traits):
     return ok1, made_selection
 
 def selection(ok1, new_features, traits):
-    """
-    Sets up tools in the sidebar allowing the user to select variables they
-    wish to filter the OkCupid dataset by. Filters the OkCupid dataset
+    """Creates tools allowing the selection of variables. Filters the dataset.
+    
+    Creates tools in the sidebar allowing the user to select variables they
+    wish to filter the OkCupid dataset with. Filters the OkCupid dataset
     according to the user's selections.
 
     Args:
@@ -502,9 +501,10 @@ def selection(ok1, new_features, traits):
     return ok1, made_selection
 
 def plot_histogram(ok1, q_number, demographic):
-    """
+    """Plots a histogram for the population or the chosen demographic.
+    
     Plots a histogram showing the counts of each option of the
-    chosen question for a particular demographic.
+    chosen question for either the population or the chosen demographic.
 
     Args:
         ok1 (pandas.DataFrame): OkCupid dataset.
@@ -517,22 +517,23 @@ def plot_histogram(ok1, q_number, demographic):
     st.plotly_chart(count,theme="streamlit")
     
 def display_probabilities(ok1, q_number, demographic):
-    """
-    Displays the probabilities of an individual in a particular demographic
-    selecting any one of the options of the chosen question.
+    """Displays the probabilities of each option for a demographic.
+    
+    Displays the probabilities of an individual in either the population or the
+    chosen demographic selecting any one of the options of the chosen question.
 
     Args:
         ok1 (pandas.DataFrame): OkCupid dataset.
         q_number (str): ID of chosen question.
         demographic (str): name of particular demographic.
     """
-    counts = ok1[q_number].value_counts() #counts in descending order
+    counts = ok1[q_number].value_counts()  # Counts in descending order
     st.text("Probability of an individual choosing each option from "
             f"{demographic}:")
     st.text("")
     last_option = len(counts) - 1
     for i, count in enumerate(counts):
-        p = count/np.sum(counts) #probability of the option
+        p = count/np.sum(counts)  # Probability of the option
         if i == 0:
             st.text(f"{counts.index[i]} : {int(100*p)}% (most likely)")
         elif i == last_option:
@@ -541,7 +542,8 @@ def display_probabilities(ok1, q_number, demographic):
             st.text(f"{counts.index[i]} : {int(100*p)}%")
 
 def population_analysis(ok1, q_number):
-    """
+    """Plots a histogram and displays probabilities for the population.
+    
     Perform analysis on the total population of the OkCupid dataset that
     answered the chosen question. Plots a histogram and displays the
     probabilities of an individual in the population selecting any one of the
@@ -556,7 +558,8 @@ def population_analysis(ok1, q_number):
     st.markdown("""---""")
 
 def chosen_demographic_analysis(ok1, q_number):
-    """
+    """Plots a histogram and displays probabilities for the chosen demographic.
+    
     Perform analysis on the chosen demographic of the OkCupid dataset that
     answered the chosen question. Plots a histogram and displays the
     probabilities of an individual in the demographic selecting any one of the
@@ -579,9 +582,11 @@ def chosen_demographic_analysis(ok1, q_number):
             st.dataframe(ok1)
 
 def save_demographic(ok1):
-    """
+    """Creates a button for saving the filtered dataframe to a .pkl file.
+    
     Provides a clickable button for the user to press if they desire to save
-    the filtered dataframe. If pressed, save the dataframe to a .pkl file.
+    the filtered dataframe. If pressed, saves the dataframe to
+    'okcupid_demographic.pkl'.
 
     Args:
         ok1 (pandas.DataFrame): filtered OkCupid dataset.
@@ -592,11 +597,11 @@ def save_demographic(ok1):
 'okcupid_demographic.pkl'")
 
 def main():
-    """
-    Processes to be executed when the app is launched and whenever it is
-    refreshed. Note that the outputs of the functions used to load the data and
-    create the traits dictionary are cached. These functions run once when the
-    app is launched and are ignored when it is refreshed.
+    """Executes when the app is launched and whenever it is refreshed.
+    
+    Note that the outputs of the functions used to load the data and create the
+    traits dictionary are cached. These functions run once when the app is
+    launched and are ignored when it is later refreshed.
     """
     ok, features = load_dataset()
     qs_and_traits, qs, total_questions, traits = load_qs_and_traits(features)
@@ -607,7 +612,7 @@ def main():
      num_questions) = initialise_question_selection(qs)
     if chosen_q_num == '':
         initial_main_page(qs, total_questions, num_questions)
-    elif chosen_q_num != '': #if the user has selected a question
+    elif chosen_q_num != '':  # If the user has selected a question
         chosen_q_int, options = display_chosen_question(qs, chosen_q_num)
         ok1, q_number = filter_chosen_question(ok,
                                                chosen_q_int,

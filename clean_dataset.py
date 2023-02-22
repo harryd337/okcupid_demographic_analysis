@@ -1,26 +1,10 @@
-#Clean OKCupid dataset.
-
-#Created on Mon Nov 21 17:42:21 2022
-#@author: Harry Durnberger
-
-#This program cleans the OKCupid dataset.
-#i.e. removes irrelevant and useless features;
-#binarises categorical features;
-#merges minority categories.
-
-#Due to the messy nature of the dataset, most of these processes must be
-# carried out manually, but are automated when possible.
-
-#Cleaned dataset is written to "ok.pkl".
-#List of total features is written to "features.txt".
-#List of newly created features is written to "new_features.txt".
 import numpy as np
 import pandas as pd
 import pickle
+import argparse
 
 def load_dataset():
-    """
-    Loads the raw OkCupid dataset.
+    """Loads the raw OkCupid dataset.
 
     Returns:
         ok (pandas.DataFrame): original OkCupid dataset.
@@ -29,9 +13,9 @@ def load_dataset():
     return ok
 
 def initial_clean(ok):
-    """
-    Perform an initial clean on the dataset. Drop likely irrelevant/
-    non-interesting features.
+    """Performs an initial clean on the dataset.
+    
+    Drops likely irrelevant/non-interesting features.
 
     Args:
         ok (pandas.DataFrame): OkCupid dataset.
@@ -49,12 +33,12 @@ def initial_clean(ok):
     return ok
 
 def binarise_categoricals_str(ok):
-    """
-    Binarise categorical features that have 'string' type categories, e.g.,
-    ‘d_religion_type’, with categories: 'Christianity', 'Buddhism', 'Atheism',
-    etc. A new column is created for each category. This new column contains
-    either a 1 or a 0 for each row, depending on whether that individual
-    belongs to that category.
+    """Binarises categorical features that have 'string' type categories.
+    
+    E.g., ‘d_religion_type’, with categories: 'Christianity', 'Buddhism',
+    'Atheism', etc. A new column is created for each category. This new column
+    contains either a 1 or a 0 for each row, depending on whether the
+    corresponding individual belongs to that category.
 
     Args:
         ok (pandas.DataFrame): OkCupid dataset.
@@ -78,10 +62,11 @@ def binarise_categoricals_str(ok):
     return ok, new_features
 
 def binarise_categoricals_yesno(ok):
-    """
-    Binarise categorical features that have 'yes/no' categories. A new column
-    is created for each category. This new column contains either a 1 if the
-    individual belongs to the positive (yes) category, or a 0 otherwise (no).
+    """Binarises categorical features that have 'yes/no' categories.
+    
+    A new column is created for each category. This new column contains either
+    a 1 if the individual belongs to the positive (yes) category, or a 0
+    otherwise (no).
 
     Args:
         ok (pandas.DataFrame): OkCupid dataset.
@@ -98,12 +83,12 @@ def binarise_categoricals_yesno(ok):
     return ok
     
 def clean_orientation(ok):
-    """
-    Clean 'd_orientation' feature. This is a feature that contains 160 unique
-    categories. Just three of these categories, 'Straight', 'Gay' and
-    'Bisexual', are attributed to ~96% of the samples. This functon merges the
-    remaining 158 minority orientations into a single binary column,
-    ‘Other orientation’.
+    """Cleans 'd_orientation' feature.
+    
+    This is a feature that contains 160 unique categories. Just three of these
+    categories, 'Straight', 'Gay' and 'Bisexual', are attributed to ~96% of the
+    samples. This functon merges the remaining 158 minority orientations into a
+    single binary column, ‘Other orientation’.
 
     Args:
         ok (pandas.DataFrame): OkCupid dataset.
@@ -121,11 +106,12 @@ def clean_orientation(ok):
     return ok
 
 def clean_gender(ok):
-    """
-    Clean 'd_gender' feature. This is a feature that contains 107 unique
-    categories. Just two of these categories, ‘Man’ and ‘Woman’, are attributed
-    to ~97% of the samples. This functon merges the remaining 105 minority
-    genders into a single binary column, ‘Other gender’.
+    """Cleans 'd_gender' feature.
+    
+    This is a feature that contains 107 unique categories. Just two of these
+    categories, ‘Man’ and ‘Woman’, are attributed to ~97% of the samples. This
+    functon merges the remaining 105 minority genders into a single binary
+    column, ‘Other gender’.
 
     Args:
         ok (pandas.DataFrame): OkCupid dataset.
@@ -139,9 +125,9 @@ def clean_gender(ok):
     return ok
 
 def create_binary_features(ok):
-    """
-    Create new binary features by binarising categorical features and cleaning
-    'd_orientation' and 'd_gender'.
+    """Creates new binary features.
+    
+    Binarises categorical features and cleans 'd_orientation' and 'd_gender'.
 
     Args:
         ok (pandas.DataFrame): OkCupid dataset.
@@ -158,12 +144,11 @@ def create_binary_features(ok):
     ok = ok.drop(columns=['d_education_phase','d_religion_type',
                         'd_offspring_current','race',
                         'd_drugs','d_smokes','d_drinks','d_orientation',
-                        'd_gender']) #drop columns we just processed
+                        'd_gender'])  # Drop columns we just processed
     return ok, new_features
 
 def clean_dataset():
-    """
-    Load and clean the OkCupid dataset.
+    """Loads and cleans the OkCupid dataset.
 
     Returns:
         ok (pandas.DataFrame): cleaned OkCupid dataset.
@@ -176,8 +161,7 @@ def clean_dataset():
     return ok, new_features
 
 def save_cleaned_dataset(ok):
-    """
-    Write the cleaned OkCupid dataset to a .pkl file.
+    """Writes the cleaned OkCupid dataset to a .pkl file.
 
     Args:
         ok (pandas.DataFrame): cleaned OkCupid dataset.
@@ -185,8 +169,7 @@ def save_cleaned_dataset(ok):
     ok.to_pickle("ok.pkl")
 
 def save_new_features(new_features):
-    """
-    Add additional groups to 'new_features'. Write this list to a .txt file.
+    """Adds additional groups to 'new_features'. Writes this to a .txt file.
 
     Args:
         new_features (list): list of lists of newly created features sorted
@@ -202,27 +185,41 @@ def save_new_features(new_features):
         pickle.dump(new_features, f)
         
 def save_all_features(ok):
-    """
-    Write a list of all the features of the dataset to a .txt file.
+    """Writes a list of all the features of the dataset to a .txt file.
 
     Args:
         ok (pandas.DataFrame): cleaned OkCupid dataset.
     """
-    ok_no_qs = ok[ok.columns.drop(list(ok.filter(regex='q')))] #remove qs
+    ok_no_qs = ok[ok.columns.drop(list(ok.filter(regex='q')))]  # Remove qs
     features = ok_no_qs.columns.tolist()
     with open('features.txt', 'w') as f:
         for line in features:
             f.write(f"{line}\n")
             
 def main():
-    """
-    Processes to be executed when 'clean_dataset.py' is called.
-    """
+    """Processes to be executed when 'clean_dataset.py' is called."""
     ok, new_features = clean_dataset()
     save_cleaned_dataset(ok)
     save_new_features(new_features)
     save_all_features(ok)
     print('Dataset cleaned')
-    
+
 if __name__ == "__main__":
+    description = """This script cleans the OKCupid dataset, i.e.; removes \
+irrelevant and useless features; binarises categorical features; and merges \
+minority categories.
+
+Due to the messy nature of the dataset, most of these processes must be \
+carried out manually, but are automated when possible.
+
+Cleaned OkCupid dataset is written to "ok.pkl".
+List of all features is written to "features.txt".
+List of newly created features is written to "new_features.txt".
+
+Author: Harry Durnberger
+"""
+    parser = argparse.ArgumentParser(description=description,
+                                     formatter_class=
+                                     argparse.RawTextHelpFormatter)
+    args = parser.parse_args()
     main()
