@@ -1,4 +1,4 @@
-# OkCupid Demographic Analysis
+# OkCupid Demographic Analysis Tool
 
 ### Project title: GUI for filtering demographic of OkCupid dataset based on personality scales and profile information to observe corresponding probabilities of answers to personal questions
 
