@@ -628,6 +628,7 @@ def main():
         else:
             st.text('Please filter the demographic.')
 
+
 st.set_page_config(page_title="OkCupid Demographic Analysis",
                    page_icon=":mag:", layout="wide")
 main()

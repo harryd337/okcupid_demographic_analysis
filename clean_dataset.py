@@ -204,6 +204,7 @@ def main():
     save_all_features(ok)
     print('Dataset cleaned')
 
+
 if __name__ == "__main__":
     description = """This script cleans the OKCupid dataset, i.e.; removes \
 irrelevant and useless features; binarises categorical features; and merges \
