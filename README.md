@@ -65,3 +65,7 @@ The user may save the filtered dataframe to "okcupid_demographic.pkl" by pressin
 ## Example use of okapp.py:
 
 https://user-images.githubusercontent.com/100152207/218328778-b5176c10-57a0-4aa2-a923-2fa46cd56447.mp4
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
